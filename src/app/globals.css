@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cosmic-bg: #050508;
+  --panel-glass: rgba(26, 27, 59, 0.82);
+  --boombox-orange: #c47a3a;
+  --boombox-brown: #8b5a2b;
+  --carnival-green: #6bc94c;
+  --board-brown: #4a3528;
+  --board-brown-dark: #2d1f16;
+  --play-gold-from: #f8edd4;
+  --play-gold-to: #d4a03a;
+  --cashout-brown: #8b5e3c;
+  --multiplier-green: #7ed321;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: var(--cosmic-bg);
+}
+
+body {
+  color: #f8fafc;
+  font-family: var(--font-body), system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+@layer utilities {
+  .text-glow-gold {
+    text-shadow: 0 0 14px rgba(212, 160, 58, 0.7);
+  }
+
+  .panel-glass {
+    background: var(--panel-glass);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /** Единый габарит кнопок в хедере (эталон — BOOMBOX) */
+  .header-btn-size {
+    @apply flex h-12 w-[7.5rem] shrink-0 items-center justify-center overflow-hidden rounded-full px-2 text-center text-xs font-bold leading-tight transition-all active:scale-95 sm:w-36 sm:text-sm;
+  }
+
+  .btn-boombox {
+    @apply rounded-full font-bold uppercase tracking-wide transition-all active:scale-95;
+    background: linear-gradient(180deg, #e8954f 0%, var(--boombox-brown) 100%);
+    box-shadow:
+      0 4px 0 #5c3a1a,
+      0 0 20px rgba(196, 122, 58, 0.35);
+    border: 1px solid rgba(255, 220, 160, 0.35);
+  }
+
+  .btn-play {
+    @apply rounded-2xl font-bold uppercase tracking-wide;
+    background: linear-gradient(180deg, var(--play-gold-from) 0%, var(--play-gold-to) 100%);
+    color: #3d2918;
+    box-shadow:
+      0 4px 0 #8b6914,
+      0 0 24px rgba(212, 160, 58, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+
+  .btn-cashout {
+    @apply rounded-2xl font-bold uppercase tracking-wide text-white;
+    background: linear-gradient(180deg, #a67c52 0%, var(--cashout-brown) 100%);
+    box-shadow: 0 4px 0 #4a3020;
+    border: 1px solid rgba(255, 200, 150, 0.2);
+  }
+
+  /* Молоток на лунках */
+  .game-board-holes .game-hole:not(:disabled) {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cdefs%3E%3ClinearGradient id='h' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ff6eb4'/%3E%3Cstop offset='50%25' stop-color='%23ff9f43'/%3E%3Cstop offset='100%25' stop-color='%23e85d04'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cellipse cx='28' cy='44' rx='14' ry='4' fill='rgba(0,0,0,0.35)'/%3E%3Cg transform='rotate(-25 28 28)'%3E%3Crect x='24' y='22' width='8' height='26' rx='3' fill='%235c3a1a'/%3E%3Crect x='10' y='6' width='36' height='22' rx='6' fill='url(%23h)' stroke='%23fff' stroke-width='1.5'/%3E%3C/g%3E%3C/svg%3E")
+        26 38,
+      pointer;
+  }
+
+  /* Крупный молоток при наведении на активного варплета */
+  .game-board-holes .game-hole.has-warplet-target:not(:disabled):hover,
+  .game-board-holes .game-hole.has-warplet-target:not(:disabled):focus-visible {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 56 56'%3E%3Cdefs%3E%3ClinearGradient id='hL' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ff6eb4'/%3E%3Cstop offset='50%25' stop-color='%23ff9f43'/%3E%3Cstop offset='100%25' stop-color='%23e85d04'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cellipse cx='28' cy='44' rx='14' ry='4' fill='rgba(0,0,0,0.35)'/%3E%3Cg transform='rotate(-25 28 28)'%3E%3Crect x='24' y='22' width='8' height='26' rx='3' fill='%235c3a1a'/%3E%3Crect x='10' y='6' width='36' height='22' rx='6' fill='url(%23hL)' stroke='%23fff' stroke-width='1.5'/%3E%3Cpath d='M38 14 L44 8 L46 12 Z' fill='%23ffd700'/%3E%3C/g%3E%3C/svg%3E")
+        36 52,
+      pointer;
+  }
+}

@@ -1,0 +1,22 @@
+---
+description: Keep Next.js dev server stable during edits
+alwaysApply: true
+---
+
+# Dev server (Boombox)
+
+## Do not break a running dev server
+
+- **Never** run `npm run build` while `npm run dev` / `npm run restart` is active — it corrupts `.next` and causes HTTP 500 until cache is cleared.
+- Prefer `npm run lint` or TypeScript checks for validation during development.
+- If you must verify production build, stop dev first or run build only when the user asks.
+
+## After code changes
+
+- Do **not** start a second dev server if one may already be running.
+- Tell the user to run **`npm run restart`** only if the page shows 500 / blank / connection refused — not after every small edit (HMR should work).
+
+## Scripts
+
+- `npm run dev` — frees ports 3000/3001, starts dev (fast).
+- `npm run restart` / `npm run dev:clean` — same + deletes `.next` (fixes broken cache).

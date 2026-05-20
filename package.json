@@ -1,0 +1,40 @@
+{
+  "name": "boombox-warplet",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "bash scripts/dev.sh",
+    "dev:clean": "bash scripts/dev.sh --clean",
+    "restart": "bash scripts/dev.sh --clean",
+    "dev:up": "bash scripts/ensure-dev.sh",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@base-org/account": "^2.5.6",
+    "@farcaster/frame-sdk": "^0.0.35",
+    "@farcaster/miniapp-wagmi-connector": "^2.0.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@tanstack/react-query": "^5.62.8",
+    "@types/three": "^0.184.1",
+    "framer-motion": "^11.15.0",
+    "next": "^15.1.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.184.0",
+    "viem": "^2.21.54",
+    "wagmi": "^2.14.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.1.3",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}
