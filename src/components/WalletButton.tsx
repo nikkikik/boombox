@@ -8,6 +8,10 @@ import { WalletConnectModal } from "./WalletConnectModal";
 const HEADER_WALLET_BTN =
   "flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-blue-400/40 bg-[#1a2a5e]/95 text-center text-xs font-bold leading-tight text-blue-100 shadow-md transition-all active:scale-95 disabled:cursor-wait disabled:opacity-50 sm:text-sm";
 
+function formatShortAddress(address: string): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 interface WalletButtonProps {
   headerSize?: boolean;
 }
@@ -44,7 +48,7 @@ export function WalletButton({ headerSize = false }: WalletButtonProps) {
           className={btnClass}
           title={`${address.slice(0, 6)}…${address.slice(-4)} · ${appChain.name}`}
         >
-          <span className="truncate px-0.5">@SMART_WALLET</span>
+          <span className="truncate px-0.5">{formatShortAddress(address)}</span>
         </button>
         {modal}
       </>
@@ -60,7 +64,7 @@ export function WalletButton({ headerSize = false }: WalletButtonProps) {
         className={btnClass}
       >
         <span className="truncate px-0.5">
-          {isPending || isConnecting ? "…" : "@SMART_WALLET"}
+          {isPending || isConnecting ? "…" : "Connect Wallet"}
         </span>
       </button>
       {modal}

@@ -22,14 +22,16 @@ export function Header({ daily }: HeaderProps) {
 
         <motion.button
           type="button"
-          disabled={!daily.canClaim || daily.isPending}
+          disabled={!daily.canClaim || daily.isPending || daily.buttonLabel === "…"}
           onClick={() => void daily.claim()}
           className={`header-btn-size relative ${
             daily.showSuccess
               ? "bg-emerald-400 text-white shadow-lg shadow-emerald-400/50"
               : daily.canClaim
                 ? "bg-green-500 text-white shadow-md shadow-green-500/40 hover:bg-green-600"
-                : "cursor-not-allowed bg-gray-500 text-white opacity-50"
+                : daily.isOnCooldown
+                  ? "cursor-not-allowed bg-slate-600 text-amber-100 opacity-90"
+                  : "cursor-not-allowed bg-gray-500 text-white opacity-50"
           }`}
           animate={daily.showSuccess ? { scale: [1, 1.08, 1] } : { scale: 1 }}
           transition={{ duration: 0.35 }}

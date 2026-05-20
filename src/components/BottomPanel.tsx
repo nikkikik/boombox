@@ -19,12 +19,12 @@ interface BottomPanelProps {
   showStartButton: boolean;
   showChoice: boolean;
   isTxPending: boolean;
+  pendingAction?: string | null;
   isMockMode: boolean;
   isConnected: boolean;
   onStartGame: () => void;
   onCashOut: () => void;
   onNextLevel: () => void;
-  onSaveStatus: (message: string) => void;
 }
 
 export function BottomPanel({
@@ -40,12 +40,12 @@ export function BottomPanel({
   showStartButton,
   showChoice,
   isTxPending,
+  pendingAction,
   isMockMode,
   isConnected,
   onStartGame,
   onCashOut,
   onNextLevel,
-  onSaveStatus,
 }: BottomPanelProps) {
   return (
     <motion.div
@@ -81,17 +81,16 @@ export function BottomPanel({
         level={level}
         chance={hitChance}
         cashOutPreview={cashOutPreview}
-        totalPoints={boomBalance}
         multiplier={multiplier}
         showStartButton={showStartButton}
         showChoice={showChoice}
         isTxPending={isTxPending}
+        pendingAction={pendingAction}
         isMockMode={isMockMode}
         isConnected={isConnected}
         onStartGame={onStartGame}
         onCashOut={onCashOut}
         onNextLevel={onNextLevel}
-        onSaveStatus={onSaveStatus}
       />
     </motion.div>
   );

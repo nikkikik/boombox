@@ -41,7 +41,7 @@ Hot reload (HMR) should work for normal edits — you only need `restart` when t
 
 ## Base wallet
 
-1. Click **@SMART_WALLET** in the header.
+1. Click **Connect Wallet** in the header.
 2. Connect via **Base Account** (smart wallet) or browser wallet (MetaMask).
 3. App uses **Base Sepolia** by default — get test ETH from [Base faucets](https://docs.base.org/base-chain/network-information/network-faucets).
 

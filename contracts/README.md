@@ -5,66 +5,22 @@
 | File | Role |
 |------|------|
 | `BoomboxToken.sol` | ERC-20 **$BOOM** (18 decimals), mint only by game |
-| `BoomboxGame.sol` | Game loop, daily check-in, rewards |
+| `BoomboxGame.sol` | Hybrid game: frontend whack, single-tx `cashOut` / `nextLevel` |
 
-## Tokenomics
+## Game flow
 
-### Daily check-in
-- `dailyCheckIn()` — once per **24 hours** (`CHECKIN_COOLDOWN`)
-- Mints **100 BOOM** (`100 * 10^18`) to `msg.sender`
+- **Whack** — off-chain (frontend rolls `levelChances`)
+- **`nextLevel(bool won, uint256 reward)`** — commits win + advances level in **one tx**
+- **`cashOut(bool won, uint256 reward)`** — commits win + mints bank in **one tx**
+- **`nextLevel(false, 0)`** — forfeit / close stale run before `startGame`
 
-### Game (gas only — no ETH)
-- `startGame()` — no `msg.value`
-- `whack()` — no `msg.value`
-- `nextLevel()` — no `msg.value`
-- `cashOut()` — mints `potentialReward`, no `msg.value`
+### Reward per level
 
-### Reward per successful level (`rewardForLevel`)
-| Level | BOOM tokens |
-|-------|-------------|
-| 1 | 100 |
-| 2 | 200 |
-| 3 | 400 |
-| 4 | 800 |
-| 5 | 1,600 |
-| 6 | 3,200 |
-| 7 | 6,400 |
-| 8 | 12,800 |
-| 9+ | 25,600, 51,200… (×2 each level) |
+`100 * 10^18 * 2^(level-1)` — see `rewardForLevel()`.
 
-Formula: `100 ether << (level - 1)` (= `100 * 10^18 * 2^(level-1)`).
-
-On miss: `potentialReward = 0`, status `GameOver`.  
-On hit: add round reward to `potentialReward`, status `Choosing`.  
-`cashOut()` mints full `potentialReward`.
-
-## Deploy (Foundry)
+## Regenerate ABI
 
 ```bash
-# Install Foundry: https://book.getfoundry.sh
-cd /path/to/THREE
 forge build
-
-# Deploy token
-forge create contracts/BoomboxToken.sol:BoomboxToken \
-  --rpc-url https://sepolia.base.org \
-  --private-key $DEPLOYER_KEY
-
-# Deploy game (replace TOKEN)
-forge create contracts/BoomboxGame.sol:BoomboxGame \
-  --constructor-args $TOKEN_ADDRESS \
-  --rpc-url https://sepolia.base.org \
-  --private-key $DEPLOYER_KEY
-
-# Link game as minter
-cast send $TOKEN_ADDRESS "setGame(address)" $GAME_ADDRESS \
-  --rpc-url https://sepolia.base.org \
-  --private-key $DEPLOYER_KEY
-```
-
-`.env.local`:
-
-```
-NEXT_PUBLIC_BOOM_TOKEN_ADDRESS=0x...
-NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=0x...
+node -e "const fs=require('fs');const a=JSON.parse(fs.readFileSync('out/BoomboxGame.sol/BoomboxGame.json'));fs.writeFileSync('src/contracts/abi/BoomboxGame.json',JSON.stringify(a.abi,null,2));"
 ```

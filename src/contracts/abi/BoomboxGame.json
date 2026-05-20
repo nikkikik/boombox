@@ -84,7 +84,18 @@
   {
     "type": "function",
     "name": "cashOut",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "won",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "reward",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
@@ -136,7 +147,18 @@
   {
     "type": "function",
     "name": "nextLevel",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "won",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "reward",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
@@ -201,13 +223,6 @@
   {
     "type": "function",
     "name": "startGame",
-    "inputs": [],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "whack",
     "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -303,7 +318,7 @@
   },
   {
     "type": "event",
-    "name": "WhackResult",
+    "name": "ResultSubmitted",
     "inputs": [
       {
         "name": "player",
@@ -312,19 +327,13 @@
         "internalType": "address"
       },
       {
-        "name": "success",
+        "name": "won",
         "type": "bool",
         "indexed": false,
         "internalType": "bool"
       },
       {
-        "name": "level",
-        "type": "uint8",
-        "indexed": false,
-        "internalType": "uint8"
-      },
-      {
-        "name": "roundReward",
+        "name": "reward",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"

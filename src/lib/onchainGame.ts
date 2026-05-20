@@ -1,6 +1,10 @@
-import { formatEther } from "viem";
+import { formatEther, parseEther } from "viem";
 import type { GamePhase } from "@/hooks/useGameState";
-import { INITIAL_MULTIPLIER, MULTIPLIER_STEP, getLevelChance } from "@/lib/gameConfig";
+import { getLevelChance, INITIAL_MULTIPLIER, MULTIPLIER_STEP } from "@/lib/gameConfig";
+
+export const BASE_ROUND_REWARD_BOOM = BigInt(100);
+export const WEI_PER_BOOM = parseEther("1");
+export const DAILY_CHECKIN_COOLDOWN_SEC = 24 * 60 * 60;
 
 /** On-chain GameStatus enum */
 export const CHAIN_STATUS = {
@@ -36,6 +40,20 @@ export function boomWeiToNumber(wei: bigint): number {
   return Number.parseFloat(formatEther(wei));
 }
 
+export function boomNumberToWei(amount: number): bigint {
+  return parseEther(amount.toFixed(0));
+}
+
+/** Matches contract: 100 * 10^18 * 2^(level-1) */
+export function rewardWeiForLevel(level: number): bigint {
+  if (level < 1) return BigInt(0);
+  return (BASE_ROUND_REWARD_BOOM * WEI_PER_BOOM) << BigInt(level - 1);
+}
+
+export function rewardBoomForLevel(level: number): number {
+  return Number(rewardWeiForLevel(level) / WEI_PER_BOOM);
+}
+
 export function multiplierForLevel(level: number): number {
   if (level < 1) return INITIAL_MULTIPLIER;
   return Number((INITIAL_MULTIPLIER + (level - 1) * MULTIPLIER_STEP).toFixed(2));
@@ -54,16 +72,33 @@ export function parsePlayerTuple(
   };
 }
 
-export function getTimeUntilCheckIn(lastCheckInAt: bigint): string {
-  if (lastCheckInAt === BigInt(0)) return "";
-  const cooldown = 24 * 60 * 60;
-  const next = Number(lastCheckInAt) + cooldown;
+/** Seconds until next daily check-in (0 = available now). */
+export function getSecondsUntilCheckIn(lastCheckInAt: bigint): number {
+  if (lastCheckInAt === BigInt(0)) return 0;
+  const next = Number(lastCheckInAt) + DAILY_CHECKIN_COOLDOWN_SEC;
   const now = Math.floor(Date.now() / 1000);
-  const diff = Math.max(0, next - now);
+  return Math.max(0, next - now);
+}
+
+export function isCheckInOnCooldown(lastCheckInAt: bigint): boolean {
+  return getSecondsUntilCheckIn(lastCheckInAt) > 0;
+}
+
+/** Human-readable countdown until next check-in. */
+export function formatCheckInCountdown(lastCheckInAt: bigint): string {
+  const diff = getSecondsUntilCheckIn(lastCheckInAt);
+  if (diff <= 0) return "";
   const hours = Math.floor(diff / 3600);
   const minutes = Math.floor((diff % 3600) / 60);
+  const seconds = diff % 60;
   if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+}
+
+/** @deprecated Use formatCheckInCountdown */
+export function getTimeUntilCheckIn(lastCheckInAt: bigint): string {
+  return formatCheckInCountdown(lastCheckInAt);
 }
 
 export function hitChanceForChainLevel(level: number): number {

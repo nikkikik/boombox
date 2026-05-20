@@ -57,7 +57,7 @@ export function GameScreen() {
           activeWarplets={game.activeWarplets}
           onWhack={game.whack}
           disabled={!game.canPlayBoard}
-          isWhackPending={game.pendingAction === "whack"}
+          isWhackPending={game.isWhackResolving}
         />
       </div>
 
@@ -73,13 +73,13 @@ export function GameScreen() {
         cashOutPreview={game.cashOutPreview}
         showStartButton={game.showStartButton}
         showChoice={game.showChoice}
-        isTxPending={game.isTxPending}
+        isTxPending={game.isChoiceTxPending || game.pendingAction === "startGame"}
+        pendingAction={game.pendingAction}
         isMockMode={game.isMockMode}
         isConnected={isConnected}
         onStartGame={handleStartGame}
         onCashOut={handleCashOut}
         onNextLevel={handleNextLevel}
-        onSaveStatus={game.setLastResult}
       />
     </main>
   );
