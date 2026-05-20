@@ -67,6 +67,9 @@ export function GameScreen() {
         multiplier={game.multiplier}
         hitChance={game.chance}
         boomBalance={game.boomBalance}
+        isBalanceLoading={game.isBalanceLoading}
+        isWrongChain={game.isWrongChain}
+        appChainName={game.appChainName}
         roundPoints={game.roundPoints}
         statusText={game.statusText}
         lastResult={game.lastResult}

@@ -1,0 +1,8 @@
+{
+  "chainId": 8453,
+  "network": "base-mainnet",
+  "deployedAt": "2026-01-01T00:00:00Z",
+  "deployer": "0xYourDeployerAddress",
+  "boomToken": "0xYourBoomboxTokenAddress",
+  "boomGame": "0xYourBoomboxGameAddress"
+}

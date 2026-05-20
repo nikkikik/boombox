@@ -30,6 +30,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# deployment output (copy addresses to .env after deploy)
+deployments/base-mainnet.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

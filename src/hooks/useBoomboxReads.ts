@@ -1,7 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useAccount, usePublicClient, useReadContract, useWatchBlockNumber } from "wagmi";
+import {
+  useAccount,
+  useBalance,
+  usePublicClient,
+  useReadContract,
+  useWatchBlockNumber,
+} from "wagmi";
+import { formatEther } from "viem";
 import {
   BOOM_TOKEN_ADDRESS,
   GAME_CONTRACT_ADDRESS,
@@ -17,17 +24,35 @@ import {
 } from "@/lib/onchainGame";
 
 export const boomBalanceQueryKey = (address?: `0x${string}`) =>
-  ["boom", "balanceOf", BOOM_TOKEN_ADDRESS, address] as const;
+  ["boom", "balanceOf", BOOM_TOKEN_ADDRESS, address, appChain.id] as const;
 
 export function useBoomboxReads() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId } = useAccount();
   const publicClient = usePublicClient({ chainId: appChain.id });
   const enabled = isOnChainEnabled && isConnected && !!address;
+  const isWrongChain =
+    isConnected && chainId !== undefined && chainId !== appChain.id;
+
+  const {
+    data: wagmiBalance,
+    isLoading: isBalanceLoading,
+    isFetching: isBalanceFetching,
+    isError: isBalanceError,
+    refetch: refetchWagmiBalance,
+  } = useBalance({
+    address,
+    token: BOOM_TOKEN_ADDRESS,
+    chainId: appChain.id,
+    query: {
+      enabled,
+      staleTime: 0,
+    },
+  });
 
   const {
     data: boomBalanceWei,
-    refetch: refetchBalance,
-    isFetching: isBalanceFetching,
+    refetch: refetchBalanceQuery,
+    isFetching: isQueryFetching,
   } = useQuery({
     queryKey: boomBalanceQueryKey(address),
     enabled: enabled && !!publicClient && !!address,
@@ -42,6 +67,10 @@ export function useBoomboxReads() {
       });
     },
   });
+
+  const refetchBalance = async () => {
+    await Promise.all([refetchWagmiBalance(), refetchBalanceQuery()]);
+  };
 
   useWatchBlockNumber({
     chainId: appChain.id,
@@ -79,8 +108,11 @@ export function useBoomboxReads() {
     playerRaw as readonly [number, number, bigint, bigint, bigint] | undefined
   );
 
+  const balanceWei =
+    wagmiBalance?.value ?? (boomBalanceWei as bigint | undefined) ?? undefined;
+
   const boomBalance =
-    boomBalanceWei !== undefined ? boomWeiToNumber(boomBalanceWei as bigint) : 0;
+    balanceWei !== undefined ? boomWeiToNumber(balanceWei) : undefined;
 
   const fetchPlayer = async () => {
     const result = await refetchPlayer();
@@ -93,9 +125,18 @@ export function useBoomboxReads() {
     isOnChain: isOnChainEnabled,
     address,
     isConnected,
+    chainId,
+    isWrongChain,
+    appChainName: appChain.name,
     player,
-    boomBalance,
-    isBalanceFetching,
+    boomBalance: boomBalance ?? 0,
+    boomBalanceFormatted:
+      boomBalance !== undefined
+        ? boomBalance.toLocaleString("en-US", { maximumFractionDigits: 2 })
+        : null,
+    isBalanceLoading: enabled && (isBalanceLoading || boomBalance === undefined),
+    isBalanceFetching: isBalanceFetching || isQueryFetching,
+    isBalanceError,
     canDailyCheckIn: canCheckIn === true,
     canDailyCheckInUnavailable: canCheckInUnavailable,
     isPlayerLoading: enabled && !isPlayerFetched,
@@ -108,5 +149,8 @@ export function useBoomboxReads() {
         refetchCanCheckIn(),
       ]);
     },
+    /** Debug: raw wei from RPC */
+    boomBalanceWei: balanceWei,
+    boomBalanceEther: balanceWei !== undefined ? formatEther(balanceWei) : null,
   };
 }

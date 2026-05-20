@@ -87,7 +87,7 @@ export function useGameState() {
     hasAttempt: false,
     activeWarplets: [],
     lastResult: chain.isOnChain
-      ? "Connect wallet & start on Base Sepolia"
+      ? `Connect wallet & start on ${chain.appChainName}`
       : "Set contract addresses in .env.local",
     soundOn: true,
   });
@@ -462,8 +462,11 @@ export function useGameState() {
     }
     switch (phase) {
       case "WAITING_FOR_TX":
+        if (chain.isWrongChain) {
+          return `Switch wallet to ${chain.appChainName} to see $BOOM balance`;
+        }
         return chain.isOnChain
-          ? "Pay gas only — confirm startGame on Base Sepolia"
+          ? `Pay gas only — confirm startGame on ${chain.appChainName}`
           : "Configure NEXT_PUBLIC_GAME_CONTRACT_ADDRESS";
       case "PLAYING":
         return hasAttempt
@@ -486,6 +489,9 @@ export function useGameState() {
     multiplier,
     roundPoints,
     boomBalance: chain.boomBalance,
+    isBalanceLoading: chain.isBalanceLoading,
+    isWrongChain: chain.isWrongChain,
+    appChainName: chain.appChainName,
     hasAttempt,
     daily,
     activeWarplets: state.activeWarplets,

@@ -12,6 +12,9 @@ interface BottomPanelProps {
   multiplier: number;
   hitChance: number;
   boomBalance: number;
+  isBalanceLoading?: boolean;
+  isWrongChain?: boolean;
+  appChainName?: string;
   roundPoints: number;
   statusText: string;
   lastResult: string | null;
@@ -33,6 +36,9 @@ export function BottomPanel({
   multiplier,
   hitChance,
   boomBalance,
+  isBalanceLoading,
+  isWrongChain,
+  appChainName,
   roundPoints,
   statusText,
   lastResult,
@@ -56,7 +62,14 @@ export function BottomPanel({
     >
       <MultiplierBadge multiplier={multiplier} />
 
-      <StatsBar level={level} hitChance={hitChance} boomBalance={boomBalance} />
+      <StatsBar
+        level={level}
+        hitChance={hitChance}
+        boomBalance={boomBalance}
+        isBalanceLoading={isBalanceLoading}
+        isWrongChain={isWrongChain}
+        appChainName={appChainName}
+      />
 
       <p className="mt-3 border-t border-white/10 py-2 text-center text-[11px] text-slate-300">
         {statusText}
