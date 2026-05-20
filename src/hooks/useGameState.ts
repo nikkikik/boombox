@@ -177,9 +177,7 @@ export function useGameState() {
     setState((s) => ({
       ...s,
       phase: "WAITING_FOR_TX",
-      lastResult: tx.isMockMode
-        ? "Mock: starting game…"
-        : "Confirm startGame in wallet…",
+      lastResult: "Confirm startGame in wallet…",
     }));
 
     if (tx.isOnChain && chain.player?.status === CHAIN_STATUS.Playing) {
@@ -348,9 +346,7 @@ export function useGameState() {
 
     setState((s) => ({
       ...s,
-      lastResult: tx.isMockMode
-        ? "Mock: claiming…"
-        : "Confirm cashOut on Base…",
+      lastResult: "Confirm cashOut on Base…",
     }));
 
     const { ok, hash } = await tx.cashOut(true, rewardWei);
@@ -467,7 +463,7 @@ export function useGameState() {
         }
         return chain.isOnChain
           ? `Pay gas only — confirm startGame on ${chain.appChainName}`
-          : "Configure NEXT_PUBLIC_GAME_CONTRACT_ADDRESS";
+          : "Connect wallet on Base";
       case "PLAYING":
         return hasAttempt
           ? `One shot · Level ${level} · ${chance}% · ${roundPoints.toFixed(0)} $BOOM banked`

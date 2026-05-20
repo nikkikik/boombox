@@ -1,14 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import {
-  useAccount,
-  useBalance,
-  usePublicClient,
-  useReadContract,
-  useWatchBlockNumber,
-} from "wagmi";
-import { formatEther } from "viem";
+import { useAccount, useReadContract } from "wagmi";
 import {
   BOOM_TOKEN_ADDRESS,
   GAME_CONTRACT_ADDRESS,
@@ -23,60 +15,29 @@ import {
   type ChainPlayerState,
 } from "@/lib/onchainGame";
 
-export const boomBalanceQueryKey = (address?: `0x${string}`) =>
-  ["boom", "balanceOf", BOOM_TOKEN_ADDRESS, address, appChain.id] as const;
+const BALANCE_REFETCH_MS = 3000;
 
 export function useBoomboxReads() {
-  const { address, isConnected, chainId } = useAccount();
-  const publicClient = usePublicClient({ chainId: appChain.id });
-  const enabled = isOnChainEnabled && isConnected && !!address;
+  const { address: walletAddress, isConnected, chainId } = useAccount();
+  const enabled = isOnChainEnabled && isConnected && !!walletAddress;
   const isWrongChain =
     isConnected && chainId !== undefined && chainId !== appChain.id;
 
   const {
-    data: wagmiBalance,
-    isLoading: isBalanceLoading,
+    data: boomBalanceWei,
+    refetch: refetchBalance,
     isFetching: isBalanceFetching,
     isError: isBalanceError,
-    refetch: refetchWagmiBalance,
-  } = useBalance({
-    address,
-    token: BOOM_TOKEN_ADDRESS,
+  } = useReadContract({
+    address: BOOM_TOKEN_ADDRESS,
+    abi: boomboxTokenAbi,
+    functionName: "balanceOf",
+    args: walletAddress ? [walletAddress] : undefined,
     chainId: appChain.id,
     query: {
-      enabled,
+      enabled: isOnChainEnabled && !!walletAddress,
+      refetchInterval: BALANCE_REFETCH_MS,
       staleTime: 0,
-    },
-  });
-
-  const {
-    data: boomBalanceWei,
-    refetch: refetchBalanceQuery,
-    isFetching: isQueryFetching,
-  } = useQuery({
-    queryKey: boomBalanceQueryKey(address),
-    enabled: enabled && !!publicClient && !!address,
-    staleTime: 0,
-    queryFn: async () => {
-      if (!publicClient || !address) return BigInt(0);
-      return publicClient.readContract({
-        address: BOOM_TOKEN_ADDRESS,
-        abi: boomboxTokenAbi,
-        functionName: "balanceOf",
-        args: [address],
-      });
-    },
-  });
-
-  const refetchBalance = async () => {
-    await Promise.all([refetchWagmiBalance(), refetchBalanceQuery()]);
-  };
-
-  useWatchBlockNumber({
-    chainId: appChain.id,
-    enabled,
-    onBlockNumber: () => {
-      void refetchBalance();
     },
   });
 
@@ -88,8 +49,12 @@ export function useBoomboxReads() {
     address: GAME_CONTRACT_ADDRESS,
     abi: boomboxGameAbi,
     functionName: "players",
-    args: address ? [address] : undefined,
-    query: { enabled, refetchInterval: false },
+    args: walletAddress ? [walletAddress] : undefined,
+    chainId: appChain.id,
+    query: {
+      enabled,
+      refetchInterval: BALANCE_REFETCH_MS,
+    },
   });
 
   const {
@@ -100,19 +65,21 @@ export function useBoomboxReads() {
     address: GAME_CONTRACT_ADDRESS,
     abi: boomboxGameAbi,
     functionName: "canDailyCheckIn",
-    args: address ? [address] : undefined,
-    query: { enabled, retry: false },
+    args: walletAddress ? [walletAddress] : undefined,
+    chainId: appChain.id,
+    query: { enabled, retry: false, refetchInterval: BALANCE_REFETCH_MS },
   });
 
   const player: ChainPlayerState | null = parsePlayerTuple(
     playerRaw as readonly [number, number, bigint, bigint, bigint] | undefined
   );
 
-  const balanceWei =
-    wagmiBalance?.value ?? (boomBalanceWei as bigint | undefined) ?? undefined;
-
   const boomBalance =
-    balanceWei !== undefined ? boomWeiToNumber(balanceWei) : undefined;
+    walletAddress === undefined
+      ? 0
+      : boomBalanceWei !== undefined
+        ? boomWeiToNumber(boomBalanceWei as bigint)
+        : 0;
 
   const fetchPlayer = async () => {
     const result = await refetchPlayer();
@@ -123,19 +90,16 @@ export function useBoomboxReads() {
 
   return {
     isOnChain: isOnChainEnabled,
-    address,
+    address: walletAddress,
     isConnected,
     chainId,
     isWrongChain,
     appChainName: appChain.name,
     player,
-    boomBalance: boomBalance ?? 0,
-    boomBalanceFormatted:
-      boomBalance !== undefined
-        ? boomBalance.toLocaleString("en-US", { maximumFractionDigits: 2 })
-        : null,
-    isBalanceLoading: enabled && (isBalanceLoading || boomBalance === undefined),
-    isBalanceFetching: isBalanceFetching || isQueryFetching,
+    boomBalance,
+    isBalanceLoading:
+      isOnChainEnabled && !!walletAddress && boomBalanceWei === undefined,
+    isBalanceFetching,
     isBalanceError,
     canDailyCheckIn: canCheckIn === true,
     canDailyCheckInUnavailable: canCheckInUnavailable,
@@ -149,8 +113,5 @@ export function useBoomboxReads() {
         refetchCanCheckIn(),
       ]);
     },
-    /** Debug: raw wei from RPC */
-    boomBalanceWei: balanceWei,
-    boomBalanceEther: balanceWei !== undefined ? formatEther(balanceWei) : null,
   };
 }

@@ -7,7 +7,7 @@ import {
   boomboxGameAbi,
   isOnChainEnabled,
 } from "@/config/gameContract";
-import { mockCashOutTx, mockStartGameTx } from "@/lib/gameTransactions";
+import { appChain } from "@/config/wagmi";
 
 export type GameTxAction =
   | "startGame"
@@ -18,19 +18,24 @@ export type GameTxAction =
 
 export type RefetchBoomBalance = () => Promise<unknown>;
 
+/** Gas headroom for cashOut(bool,uint256) + mint */
+const CASH_OUT_GAS = BigInt(400_000);
+const NEXT_LEVEL_GAS = BigInt(350_000);
+const START_GAME_GAS = BigInt(200_000);
+const DAILY_CHECKIN_GAS = BigInt(300_000);
+
 export function useGameTransactions(options?: {
   refetchBalance?: RefetchBoomBalance;
   refetchAfterDailyCheckIn?: () => Promise<unknown>;
 }) {
-  const { isConnected } = useAccount();
-  const publicClient = usePublicClient();
+  const { address: walletAddress, isConnected, chain } = useAccount();
+  const publicClient = usePublicClient({ chainId: appChain.id });
   const { writeContractAsync, isPending: wagmiPending, error } = useWriteContract();
-  const [mockPending, setMockPending] = useState(false);
   const [pendingAction, setPendingAction] = useState<GameTxAction>(null);
   const refetchBalance = options?.refetchBalance;
   const refetchAfterDailyCheckIn = options?.refetchAfterDailyCheckIn;
 
-  const isPending = wagmiPending || mockPending;
+  const isPending = wagmiPending;
 
   const waitReceipt = useCallback(
     async (hash: `0x${string}`) => {
@@ -52,7 +57,8 @@ export function useGameTransactions(options?: {
       action: GameTxAction,
       fn: () => Promise<`0x${string}` | undefined>
     ): Promise<{ ok: boolean; hash?: string }> => {
-      if (!isConnected) return { ok: false };
+      if (!isConnected || !walletAddress) return { ok: false };
+      if (chain?.id !== undefined && chain.id !== appChain.id) return { ok: false };
       setPendingAction(action);
       try {
         const hash = await fn();
@@ -76,6 +82,8 @@ export function useGameTransactions(options?: {
     },
     [
       isConnected,
+      walletAddress,
+      chain?.id,
       waitReceipt,
       refetchBalanceAfterMint,
       refetchBalance,
@@ -83,97 +91,83 @@ export function useGameTransactions(options?: {
     ]
   );
 
-  const startGame = useCallback(async () => {
-    if (isOnChainEnabled) {
-      return runWrite("startGame", () =>
-        writeContractAsync({
-          address: GAME_CONTRACT_ADDRESS,
-          abi: boomboxGameAbi,
-          functionName: "startGame",
-        })
-      );
-    }
-    setMockPending(true);
-    try {
-      const { hash } = await mockStartGameTx();
-      return { ok: true, hash };
-    } catch {
-      return { ok: false };
-    } finally {
-      setMockPending(false);
-    }
-  }, [runWrite, writeContractAsync]);
-
-  const forfeitRun = useCallback(async () => {
-    if (isOnChainEnabled) {
-      return runWrite("nextLevel", () =>
-        writeContractAsync({
-          address: GAME_CONTRACT_ADDRESS,
-          abi: boomboxGameAbi,
-          functionName: "nextLevel",
-          args: [false, BigInt(0)],
-        })
-      );
-    }
-    return { ok: true };
-  }, [runWrite, writeContractAsync]);
-
-  /** Single tx: cashOut(bool won, uint256 reward) — mints on success. */
-  const cashOut = useCallback(
-    async (won: boolean, rewardWei: bigint) => {
-      if (isOnChainEnabled) {
-        return runWrite("cashOut", () =>
-          writeContractAsync({
-            address: GAME_CONTRACT_ADDRESS,
-            abi: boomboxGameAbi,
-            functionName: "cashOut",
-            args: [won, rewardWei],
-          })
-        );
-      }
-      setMockPending(true);
-      try {
-        const { hash } = await mockCashOutTx(0);
-        return { ok: true, hash };
-      } catch {
-        return { ok: false };
-      } finally {
-        setMockPending(false);
-      }
-    },
-    [runWrite, writeContractAsync]
+  const writeOpts = useCallback(
+    () => ({
+      address: GAME_CONTRACT_ADDRESS,
+      abi: boomboxGameAbi,
+      account: walletAddress,
+      chainId: appChain.id,
+    }),
+    [walletAddress]
   );
 
-  /** Single tx: nextLevel(bool won, uint256 reward) — no submitResult. */
+  const startGame = useCallback(async () => {
+    if (!isOnChainEnabled || !walletAddress) return { ok: false };
+    return runWrite("startGame", () =>
+      writeContractAsync({
+        ...writeOpts(),
+        functionName: "startGame",
+        gas: START_GAME_GAS,
+      })
+    );
+  }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
+
+  const forfeitRun = useCallback(async () => {
+    if (!isOnChainEnabled || !walletAddress) return { ok: false };
+    return runWrite("nextLevel", () =>
+      writeContractAsync({
+        ...writeOpts(),
+        functionName: "nextLevel",
+        args: [false, BigInt(0)],
+        gas: NEXT_LEVEL_GAS,
+      })
+    );
+  }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
+
+  /**
+   * cashOut(bool won, uint256 reward) on GAME_CONTRACT.
+   * Mint goes to msg.sender === connected wallet (explicit account below).
+   */
+  const cashOut = useCallback(
+    async (won: boolean, rewardWei: bigint) => {
+      if (!isOnChainEnabled || !walletAddress) return { ok: false };
+      return runWrite("cashOut", () =>
+        writeContractAsync({
+          ...writeOpts(),
+          functionName: "cashOut",
+          args: [won, rewardWei],
+          gas: CASH_OUT_GAS,
+        })
+      );
+    },
+    [runWrite, writeContractAsync, writeOpts, walletAddress]
+  );
+
   const nextLevel = useCallback(
     async (won: boolean, rewardWei: bigint) => {
-      if (isOnChainEnabled) {
-        return runWrite("nextLevel", () =>
-          writeContractAsync({
-            address: GAME_CONTRACT_ADDRESS,
-            abi: boomboxGameAbi,
-            functionName: "nextLevel",
-            args: [won, rewardWei],
-          })
-        );
-      }
-      return { ok: true };
+      if (!isOnChainEnabled || !walletAddress) return { ok: false };
+      return runWrite("nextLevel", () =>
+        writeContractAsync({
+          ...writeOpts(),
+          functionName: "nextLevel",
+          args: [won, rewardWei],
+          gas: NEXT_LEVEL_GAS,
+        })
+      );
     },
-    [runWrite, writeContractAsync]
+    [runWrite, writeContractAsync, writeOpts, walletAddress]
   );
 
   const dailyCheckIn = useCallback(async () => {
-    if (isOnChainEnabled) {
-      return runWrite("dailyCheckIn", () =>
-        writeContractAsync({
-          address: GAME_CONTRACT_ADDRESS,
-          abi: boomboxGameAbi,
-          functionName: "dailyCheckIn",
-        })
-      );
-    }
-    return { ok: false };
-  }, [runWrite, writeContractAsync]);
+    if (!isOnChainEnabled || !walletAddress) return { ok: false };
+    return runWrite("dailyCheckIn", () =>
+      writeContractAsync({
+        ...writeOpts(),
+        functionName: "dailyCheckIn",
+        gas: DAILY_CHECKIN_GAS,
+      })
+    );
+  }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
 
   return {
     startGame,
@@ -184,8 +178,9 @@ export function useGameTransactions(options?: {
     isPending,
     pendingAction,
     error,
-    isMockMode: !isOnChainEnabled,
+    isMockMode: false,
     isConnected,
     isOnChain: isOnChainEnabled,
+    walletAddress,
   };
 }

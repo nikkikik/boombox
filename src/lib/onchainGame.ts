@@ -96,6 +96,23 @@ export function formatCheckInCountdown(lastCheckInAt: bigint): string {
   return `${seconds}s`;
 }
 
+/** e.g. "Wait for 12 hours" */
+export function formatWaitForHours(lastCheckInAt: bigint): string {
+  const diff = getSecondsUntilCheckIn(lastCheckInAt);
+  if (diff <= 0) return "";
+  const hours = Math.max(1, Math.ceil(diff / 3600));
+  return `Wait for ${hours} hour${hours === 1 ? "" : "s"}`;
+}
+
+export function formatLastCheckInAt(lastCheckInAt: bigint): string {
+  if (lastCheckInAt === BigInt(0)) return "never";
+  return new Date(Number(lastCheckInAt) * 1000).toLocaleString();
+}
+
+export function isCheckInCooldownActive(lastCheckInAt: bigint): boolean {
+  return getSecondsUntilCheckIn(lastCheckInAt) > 0;
+}
+
 /** @deprecated Use formatCheckInCountdown */
 export function getTimeUntilCheckIn(lastCheckInAt: bigint): string {
   return formatCheckInCountdown(lastCheckInAt);
