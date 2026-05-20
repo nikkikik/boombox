@@ -69,13 +69,20 @@ NEXT_PUBLIC_SCORE_CONTRACT_ADDRESS=0xYourAddress
 
 ## Environment
 
-Copy `.env.example` → `.env.local`.
+**Local:** copy `.env.example` → `.env.local`
+
+**Vercel / production:** set these in the project → **Settings → Environment Variables**, or rely on committed `.env.production`:
 
 | Variable | Description |
 |----------|-------------|
-| `NEXT_PUBLIC_SCORE_CONTRACT_ADDRESS` | Deployed BoomboxScore contract |
+| `NEXT_PUBLIC_BOOM_TOKEN_ADDRESS` | BoomboxToken on Base Sepolia |
+| `NEXT_PUBLIC_GAME_CONTRACT_ADDRESS` | BoomboxGame on Base Sepolia |
+| `NEXT_PUBLIC_SCORE_CONTRACT_ADDRESS` | Optional legacy score contract |
 | `NEXT_PUBLIC_USE_MAINNET` | `true` = Base mainnet, else Sepolia |
 | `NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL` | Optional custom RPC |
+
+If addresses are missing at build time, the app runs in **mock mode** (no wallet txs, Daily Check-in shows “No contract”).
+After changing env on Vercel, **redeploy** the project.
 
 ## Game config
 

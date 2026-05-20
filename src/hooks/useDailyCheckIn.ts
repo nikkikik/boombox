@@ -113,7 +113,7 @@ export function useDailyCheckIn(chain: ChainReads, tx: GameTx) {
     if (showSuccess) return "Claimed!";
     if (chain.isPlayerLoading) return "…";
     if (!chain.isConnected) return "Daily Check-in";
-    if (!chain.isOnChain) return "No contract";
+    if (!chain.isOnChain) return "No contract (env)";
     if (canClaim) return "Daily Check-in";
     if (countdownLabel) return countdownLabel;
     return `Next in ${Math.ceil(DAILY_CHECKIN_COOLDOWN_SEC / 3600)}h`;
