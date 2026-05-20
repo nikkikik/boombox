@@ -43,7 +43,7 @@ export function StatsBar({
           className="mt-0.5 text-sm font-black text-emerald-300"
           title={
             isWrongChain
-              ? `Switch wallet to ${appChainName ?? "Base Sepolia"}`
+              ? `Switch wallet to ${appChainName ?? "Base Mainnet"}`
               : "BOOM game token (minted via Daily Check-in / Cash out)"
           }
         >

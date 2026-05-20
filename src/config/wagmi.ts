@@ -1,14 +1,16 @@
 import { http, createConfig, createStorage, cookieStorage } from "wagmi";
-import { base, baseSepolia } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { baseAccount, injected } from "wagmi/connectors";
 import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector";
 
-/** Primary chain for development (Base Sepolia). Set NEXT_PUBLIC_USE_MAINNET=true for Base mainnet. */
-export const appChain =
-  process.env.NEXT_PUBLIC_USE_MAINNET === "true" ? base : baseSepolia;
+/** Production chain: Base Mainnet only */
+export const appChain = base;
+
+export const SWITCH_TO_BASE_MAINNET_MESSAGE =
+  "Switch to Base Mainnet to play";
 
 export const config = createConfig({
-  chains: [appChain, base, baseSepolia],
+  chains: [base],
   connectors: [
     baseAccount({
       appName: "Boombox Warplet",
@@ -21,10 +23,6 @@ export const config = createConfig({
   transports: {
     [base.id]: http(
       process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL ?? "https://mainnet.base.org"
-    ),
-    [baseSepolia.id]: http(
-      process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL ??
-        "https://sepolia.base.org"
     ),
   },
 });

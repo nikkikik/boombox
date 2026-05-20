@@ -25,6 +25,7 @@ export function useDailyCheckIn(chain: ChainReads, tx: GameTx) {
     chain.isOnChain &&
     chain.isConnected &&
     !!chain.address &&
+    !chain.isWrongChain &&
     !chain.isPlayerLoading &&
     !onCooldown;
 
@@ -59,6 +60,7 @@ export function useDailyCheckIn(chain: ChainReads, tx: GameTx) {
     if (tx.isPending) return "Claiming…";
     if (chain.isPlayerLoading) return "…";
     if (!chain.isConnected) return "Daily Check-in";
+    if (chain.isWrongChain) return chain.switchNetworkMessage;
     if (canClaim) return "Daily Check-in";
     if (onCooldown && waitLabel) return waitLabel;
     return "Daily Check-in";
@@ -77,5 +79,7 @@ export function useDailyCheckIn(chain: ChainReads, tx: GameTx) {
     secondsUntilCheckIn: secondsUntil,
     cooldownHours: DAILY_CHECKIN_COOLDOWN_SEC / 3600,
     isOnChain: chain.isOnChain,
+    isWrongChain: chain.isWrongChain,
+    hideButton: onCooldown && !showSuccess && !tx.isPending,
   };
 }

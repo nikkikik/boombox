@@ -25,6 +25,7 @@ interface BottomPanelProps {
   pendingAction?: string | null;
   isMockMode: boolean;
   isConnected: boolean;
+  switchNetworkMessage?: string;
   onStartGame: () => void;
   onCashOut: () => void;
   onNextLevel: () => void;
@@ -49,6 +50,7 @@ export function BottomPanel({
   pendingAction,
   isMockMode,
   isConnected,
+  switchNetworkMessage,
   onStartGame,
   onCashOut,
   onNextLevel,
@@ -101,6 +103,8 @@ export function BottomPanel({
         pendingAction={pendingAction}
         isMockMode={isMockMode}
         isConnected={isConnected}
+        isWrongChain={isWrongChain}
+        switchNetworkMessage={switchNetworkMessage}
         onStartGame={onStartGame}
         onCashOut={onCashOut}
         onNextLevel={onNextLevel}

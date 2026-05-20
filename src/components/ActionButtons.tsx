@@ -16,6 +16,8 @@ interface ActionButtonsProps {
   pendingAction?: string | null;
   isMockMode: boolean;
   isConnected: boolean;
+  isWrongChain?: boolean;
+  switchNetworkMessage?: string;
   onStartGame: () => void;
   onCashOut: () => void;
   onNextLevel: () => void;
@@ -33,6 +35,8 @@ export function ActionButtons({
   pendingAction,
   isMockMode,
   isConnected,
+  isWrongChain,
+  switchNetworkMessage,
   onStartGame,
   onCashOut,
   onNextLevel,
@@ -51,21 +55,30 @@ export function ActionButtons({
     }
   })();
 
+  const txBlocked = !isConnected || isWrongChain;
+
   if (showStartButton) {
     return (
       <div className="mt-3 space-y-2">
+        {isWrongChain && isConnected && (
+          <p className="text-center text-xs font-medium text-amber-300">
+            {switchNetworkMessage ?? "Switch to Base Mainnet to play"}
+          </p>
+        )}
         <motion.button
           type="button"
-          disabled={isTxPending || !isConnected}
+          disabled={isTxPending || txBlocked}
           onClick={onStartGame}
           className="btn-play min-h-[56px] w-full px-4 py-3 text-sm font-black uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-45"
-          whileTap={isConnected && !isTxPending ? { scale: 0.97 } : {}}
+          whileTap={!txBlocked && !isTxPending ? { scale: 0.97 } : {}}
         >
           {isTxPending
             ? (txLabel ?? "Confirm in wallet…")
-            : !isConnected
-              ? "Connect wallet to start"
-              : "Start game"}
+            : isWrongChain
+              ? "Wrong network"
+              : !isConnected
+                ? "Connect wallet to start"
+                : "Start game"}
           {!isTxPending && isConnected && (
             <span className="mt-1 block text-[10px] font-semibold normal-case opacity-80">
               {isMockMode ? "Mock startGame tx (Base)" : "startGame on Base"}
@@ -84,10 +97,15 @@ export function ActionButtons({
   if (showChoice) {
     return (
       <div className="mt-3 space-y-2">
+        {isWrongChain && isConnected && (
+          <p className="text-center text-xs font-medium text-amber-300">
+            {switchNetworkMessage ?? "Switch to Base Mainnet to play"}
+          </p>
+        )}
         <div className="flex gap-2">
           <motion.button
             type="button"
-            disabled={isTxPending}
+            disabled={isTxPending || txBlocked}
             onClick={onNextLevel}
             className="btn-play min-h-[52px] flex-[1.6] px-2 py-3 text-[10px] leading-tight disabled:cursor-not-allowed disabled:opacity-40 sm:text-xs"
             whileTap={!isTxPending ? { scale: 0.97 } : {}}
@@ -101,7 +119,7 @@ export function ActionButtons({
 
           <motion.button
             type="button"
-            disabled={isTxPending || cashOutPreview <= 0}
+            disabled={isTxPending || txBlocked || cashOutPreview <= 0}
             onClick={onCashOut}
             className="btn-cashout min-h-[52px] flex-1 px-2 py-3 text-[10px] leading-tight disabled:cursor-not-allowed disabled:opacity-40 sm:text-xs"
             whileTap={cashOutPreview > 0 && !isTxPending ? { scale: 0.97 } : {}}

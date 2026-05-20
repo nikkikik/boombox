@@ -10,7 +10,10 @@ interface HeaderProps {
 
 export function Header({ daily }: HeaderProps) {
   const showMeta =
-    daily.showSuccess || daily.isOnCooldown || daily.lastCheckInAt > BigInt(0);
+    daily.showSuccess ||
+    daily.isOnCooldown ||
+    daily.isWrongChain ||
+    daily.lastCheckInAt > BigInt(0);
 
   return (
     <header className="relative z-20 w-full px-3 pt-3">
@@ -24,44 +27,49 @@ export function Header({ daily }: HeaderProps) {
             BOOMBOX
           </button>
 
-          <div className="flex flex-col items-center gap-0.5">
-            <motion.button
-              type="button"
-              disabled={!daily.canClaim || daily.isPending}
-              onClick={() => void daily.claim()}
-              className={`header-btn-size relative ${
-                daily.showSuccess
-                  ? "bg-emerald-400 text-white shadow-lg shadow-emerald-400/50"
-                  : daily.canClaim
-                    ? "bg-green-500 text-white shadow-md shadow-green-500/40 hover:bg-green-600"
-                    : daily.isOnCooldown
-                      ? "cursor-not-allowed bg-slate-600 text-amber-100 opacity-90"
-                      : "cursor-not-allowed bg-gray-500 text-white opacity-50"
-              }`}
-              animate={daily.showSuccess ? { scale: [1, 1.08, 1] } : { scale: 1 }}
-              transition={{ duration: 0.35 }}
-              aria-label={
-                daily.canClaim ? "Claim daily 100 BOOM" : daily.waitLabel ?? "On cooldown"
-              }
-            >
-              <span className="truncate px-0.5">{daily.buttonLabel}</span>
-            </motion.button>
+          <div className="flex min-w-[120px] flex-col items-center gap-0.5">
+            {!daily.hideButton ? (
+              <motion.button
+                type="button"
+                disabled={!daily.canClaim || daily.isPending}
+                onClick={() => void daily.claim()}
+                className={`header-btn-size relative ${
+                  daily.showSuccess
+                    ? "bg-emerald-400 text-white shadow-lg shadow-emerald-400/50"
+                    : daily.canClaim
+                      ? "bg-green-500 text-white shadow-md shadow-green-500/40 hover:bg-green-600"
+                      : daily.isWrongChain
+                        ? "cursor-not-allowed bg-amber-900/80 text-amber-100"
+                        : "cursor-not-allowed bg-gray-500 text-white opacity-50"
+                }`}
+                animate={daily.showSuccess ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+                transition={{ duration: 0.35 }}
+              >
+                <span className="truncate px-0.5 text-[10px] sm:text-xs">
+                  {daily.buttonLabel}
+                </span>
+              </motion.button>
+            ) : (
+              <div className="header-btn-size flex items-center justify-center rounded-full border border-amber-500/40 bg-slate-700/90 px-2 text-center text-[10px] font-semibold text-amber-100">
+                {daily.waitLabel ?? daily.buttonLabel}
+              </div>
+            )}
             {showMeta && (
-              <p className="max-w-[140px] text-center text-[9px] leading-tight text-slate-400">
-                {daily.showSuccess ? (
-                  <>
-                    Claimed · last: {daily.lastCheckInLabel}
-                  </>
+              <p className="max-w-[150px] text-center text-[9px] leading-tight text-slate-400">
+                {daily.isWrongChain ? (
+                  daily.buttonLabel
+                ) : daily.showSuccess ? (
+                  <>Claimed · {daily.lastCheckInLabel}</>
                 ) : daily.isOnCooldown ? (
                   <>
                     {daily.waitLabel}
                     <br />
                     <span className="text-slate-500">
-                      lastCheckIn: {daily.lastCheckInLabel}
+                      last: {daily.lastCheckInLabel}
                     </span>
                   </>
                 ) : (
-                  <>lastCheckIn: {daily.lastCheckInLabel}</>
+                  <>last: {daily.lastCheckInLabel}</>
                 )}
               </p>
             )}

@@ -80,6 +80,7 @@ export function GameScreen() {
         pendingAction={game.pendingAction}
         isMockMode={game.isMockMode}
         isConnected={isConnected}
+        switchNetworkMessage={game.switchNetworkMessage}
         onStartGame={handleStartGame}
         onCashOut={handleCashOut}
         onNextLevel={handleNextLevel}

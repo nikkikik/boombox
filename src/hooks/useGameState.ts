@@ -18,6 +18,7 @@ import {
   rewardBoomForLevel,
   rewardWeiForLevel,
 } from "@/lib/onchainGame";
+import { SWITCH_TO_BASE_MAINNET_MESSAGE } from "@/config/wagmi";
 import { useBoomboxReads } from "./useBoomboxReads";
 import { useDailyCheckIn } from "./useDailyCheckIn";
 import { useGameTransactions } from "./useGameTransactions";
@@ -171,6 +172,13 @@ export function useGameState() {
   const startGame = useCallback(async (): Promise<boolean> => {
     if (!tx.isConnected) {
       setState((s) => ({ ...s, lastResult: "Connect wallet to start" }));
+      return false;
+    }
+    if (chain.isWrongChain) {
+      setState((s) => ({
+        ...s,
+        lastResult: SWITCH_TO_BASE_MAINNET_MESSAGE,
+      }));
       return false;
     }
 
@@ -336,6 +344,10 @@ export function useGameState() {
 
   const cashOut = useCallback(async (): Promise<boolean> => {
     if (state.phase !== "CHOOSING_REWARD") return false;
+    if (chain.isWrongChain) {
+      setState((s) => ({ ...s, lastResult: SWITCH_TO_BASE_MAINNET_MESSAGE }));
+      return false;
+    }
     if (!tx.isConnected) {
       setState((s) => ({ ...s, lastResult: "Connect wallet to cash out" }));
       return false;
@@ -388,6 +400,10 @@ export function useGameState() {
 
   const goToNextLevel = useCallback(async () => {
     if (state.phase !== "CHOOSING_REWARD") return;
+    if (chain.isWrongChain) {
+      setState((s) => ({ ...s, lastResult: SWITCH_TO_BASE_MAINNET_MESSAGE }));
+      return;
+    }
 
     const rewardWei = rewardWeiForLevel(state.level);
     const nextLevel = state.level + 1;
@@ -440,12 +456,20 @@ export function useGameState() {
     tx.isPending &&
     (tx.pendingAction === "cashOut" || tx.pendingAction === "nextLevel");
 
+  const canTransact = chain.isConnected && !chain.isWrongChain;
   const canPlayBoard =
-    phase === "PLAYING" && hasAttempt && !isWhackResolving && !tx.isPending;
+    canTransact &&
+    phase === "PLAYING" &&
+    hasAttempt &&
+    !isWhackResolving &&
+    !tx.isPending;
   const showStartButton = phase === "WAITING_FOR_TX" || phase === "GAME_OVER";
   const showChoice = phase === "CHOOSING_REWARD";
 
   const statusText = (() => {
+    if (chain.isWrongChain && chain.isConnected) {
+      return SWITCH_TO_BASE_MAINNET_MESSAGE;
+    }
     if (isWhackResolving) return "Resolving whack…";
     if (tx.isPending && tx.pendingAction === "cashOut") {
       return "Minting $BOOM on Base…";
@@ -458,12 +482,9 @@ export function useGameState() {
     }
     switch (phase) {
       case "WAITING_FOR_TX":
-        if (chain.isWrongChain) {
-          return `Switch wallet to ${chain.appChainName} to see $BOOM balance`;
-        }
         return chain.isOnChain
-          ? `Pay gas only — confirm startGame on ${chain.appChainName}`
-          : "Connect wallet on Base";
+          ? "Pay gas only — confirm startGame on Base Mainnet"
+          : "Connect wallet to play";
       case "PLAYING":
         return hasAttempt
           ? `One shot · Level ${level} · ${chance}% · ${roundPoints.toFixed(0)} $BOOM banked`
@@ -487,6 +508,8 @@ export function useGameState() {
     boomBalance: chain.boomBalance,
     isBalanceLoading: chain.isBalanceLoading,
     isWrongChain: chain.isWrongChain,
+    canTransact,
+    switchNetworkMessage: SWITCH_TO_BASE_MAINNET_MESSAGE,
     appChainName: chain.appChainName,
     hasAttempt,
     daily,

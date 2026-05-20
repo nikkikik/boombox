@@ -8,7 +8,7 @@ import {
   boomboxTokenAbi,
   isOnChainEnabled,
 } from "@/config/gameContract";
-import { appChain } from "@/config/wagmi";
+import { SWITCH_TO_BASE_MAINNET_MESSAGE, appChain } from "@/config/wagmi";
 import {
   boomWeiToNumber,
   parsePlayerTuple,
@@ -94,7 +94,8 @@ export function useBoomboxReads() {
     isConnected,
     chainId,
     isWrongChain,
-    appChainName: appChain.name,
+    appChainName: "Base Mainnet",
+    switchNetworkMessage: SWITCH_TO_BASE_MAINNET_MESSAGE,
     player,
     boomBalance,
     isBalanceLoading:
