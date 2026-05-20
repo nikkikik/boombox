@@ -11,6 +11,7 @@ import { appChain } from "@/config/wagmi";
 
 export type GameTxAction =
   | "startGame"
+  | "submitResult"
   | "cashOut"
   | "nextLevel"
   | "dailyCheckIn"
@@ -18,11 +19,20 @@ export type GameTxAction =
 
 export type RefetchBoomBalance = () => Promise<unknown>;
 
-/** Gas headroom for cashOut(bool,uint256) + mint */
 const CASH_OUT_GAS = BigInt(400_000);
-const NEXT_LEVEL_GAS = BigInt(350_000);
+const SUBMIT_RESULT_GAS = BigInt(250_000);
+const NEXT_LEVEL_GAS = BigInt(200_000);
 const START_GAME_GAS = BigInt(200_000);
 const DAILY_CHECKIN_GAS = BigInt(300_000);
+
+function shortRevertMessage(err: unknown): string {
+  if (err && typeof err === "object") {
+    const e = err as { shortMessage?: string; message?: string };
+    const msg = e.shortMessage ?? e.message;
+    if (msg) return msg.length > 120 ? `${msg.slice(0, 117)}…` : msg;
+  }
+  return "Transaction failed";
+}
 
 export function useGameTransactions(options?: {
   refetchBalance?: RefetchBoomBalance;
@@ -32,6 +42,7 @@ export function useGameTransactions(options?: {
   const publicClient = usePublicClient({ chainId: appChain.id });
   const { writeContractAsync, isPending: wagmiPending, error } = useWriteContract();
   const [pendingAction, setPendingAction] = useState<GameTxAction>(null);
+  const [lastTxError, setLastTxError] = useState<string | null>(null);
   const refetchBalance = options?.refetchBalance;
   const refetchAfterDailyCheckIn = options?.refetchAfterDailyCheckIn;
 
@@ -56,10 +67,11 @@ export function useGameTransactions(options?: {
     async (
       action: GameTxAction,
       fn: () => Promise<`0x${string}` | undefined>
-    ): Promise<{ ok: boolean; hash?: string }> => {
+    ): Promise<{ ok: boolean; hash?: string; error?: string }> => {
       if (!isConnected || !walletAddress) return { ok: false };
       if (chain?.id !== undefined && chain.id !== appChain.id) return { ok: false };
       setPendingAction(action);
+      setLastTxError(null);
       try {
         const hash = await fn();
         if (!hash) return { ok: false };
@@ -74,8 +86,10 @@ export function useGameTransactions(options?: {
         }
 
         return { ok: true, hash };
-      } catch {
-        return { ok: false };
+      } catch (err) {
+        const message = shortRevertMessage(err);
+        setLastTxError(message);
+        return { ok: false, error: message };
       } finally {
         setPendingAction(null);
       }
@@ -112,50 +126,76 @@ export function useGameTransactions(options?: {
     );
   }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
 
+  /** Close a stale Playing run before startGame */
   const forfeitRun = useCallback(async () => {
     if (!isOnChainEnabled || !walletAddress) return { ok: false };
-    return runWrite("nextLevel", () =>
+    return runWrite("submitResult", () =>
       writeContractAsync({
         ...writeOpts(),
-        functionName: "nextLevel",
+        functionName: "submitResult",
         args: [false, BigInt(0)],
-        gas: NEXT_LEVEL_GAS,
+        gas: SUBMIT_RESULT_GAS,
       })
     );
   }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
 
-  /**
-   * cashOut(bool won, uint256 reward) on GAME_CONTRACT.
-   * Mint goes to msg.sender === connected wallet (explicit account below).
-   */
-  const cashOut = useCallback(
+  const submitResult = useCallback(
     async (won: boolean, rewardWei: bigint) => {
       if (!isOnChainEnabled || !walletAddress) return { ok: false };
-      return runWrite("cashOut", () =>
+      return runWrite("submitResult", () =>
         writeContractAsync({
           ...writeOpts(),
-          functionName: "cashOut",
+          functionName: "submitResult",
           args: [won, rewardWei],
-          gas: CASH_OUT_GAS,
+          gas: SUBMIT_RESULT_GAS,
         })
       );
     },
     [runWrite, writeContractAsync, writeOpts, walletAddress]
   );
 
+  const cashOutMint = useCallback(async () => {
+    if (!isOnChainEnabled || !walletAddress) return { ok: false };
+    return runWrite("cashOut", () =>
+      writeContractAsync({
+        ...writeOpts(),
+        functionName: "cashOut",
+        gas: CASH_OUT_GAS,
+      })
+    );
+  }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
+
+  /** Win on current level → submitResult → cashOut (two txs, matches mainnet contract) */
+  const cashOut = useCallback(
+    async (won: boolean, rewardWei: bigint) => {
+      if (!won) return forfeitRun();
+      const submit = await submitResult(true, rewardWei);
+      if (!submit.ok) return submit;
+      return cashOutMint();
+    },
+    [forfeitRun, submitResult, cashOutMint]
+  );
+
+  const nextLevelAdvance = useCallback(async () => {
+    if (!isOnChainEnabled || !walletAddress) return { ok: false };
+    return runWrite("nextLevel", () =>
+      writeContractAsync({
+        ...writeOpts(),
+        functionName: "nextLevel",
+        gas: NEXT_LEVEL_GAS,
+      })
+    );
+  }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
+
+  /** Win on current level → submitResult → nextLevel (two txs, matches mainnet contract) */
   const nextLevel = useCallback(
     async (won: boolean, rewardWei: bigint) => {
-      if (!isOnChainEnabled || !walletAddress) return { ok: false };
-      return runWrite("nextLevel", () =>
-        writeContractAsync({
-          ...writeOpts(),
-          functionName: "nextLevel",
-          args: [won, rewardWei],
-          gas: NEXT_LEVEL_GAS,
-        })
-      );
+      if (!won) return forfeitRun();
+      const submit = await submitResult(true, rewardWei);
+      if (!submit.ok) return submit;
+      return nextLevelAdvance();
     },
-    [runWrite, writeContractAsync, writeOpts, walletAddress]
+    [forfeitRun, submitResult, nextLevelAdvance]
   );
 
   const dailyCheckIn = useCallback(async () => {
@@ -172,12 +212,13 @@ export function useGameTransactions(options?: {
   return {
     startGame,
     forfeitRun,
+    submitResult,
     cashOut,
     nextLevel,
     dailyCheckIn,
     isPending,
     pendingAction,
-    error,
+    error: error ?? (lastTxError ? new Error(lastTxError) : null),
     isMockMode: false,
     isConnected,
     isOnChain: isOnChainEnabled,

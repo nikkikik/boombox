@@ -67,9 +67,18 @@ if [[ "${LINKED,,}" != "${GAME,,}" ]]; then
   exit 1
 fi
 
-BOOM_REF=$(cast call "$GAME" "boom()(address)" --rpc-url "$RPC_URL")
-if [[ "${BOOM_REF,,}" != "${TOKEN,,}" ]]; then
+TOKEN_REF=$(cast call "$GAME" "token()(address)" --rpc-url "$RPC_URL" 2>/dev/null || true)
+if [[ -n "$TOKEN_REF" && "${TOKEN_REF,,}" != "${TOKEN,,}" ]]; then
+  echo "Error: game.token() mismatch"
+  exit 1
+fi
+BOOM_REF=$(cast call "$GAME" "boom()(address)" --rpc-url "$RPC_URL" 2>/dev/null || true)
+if [[ -n "$BOOM_REF" && "${BOOM_REF,,}" != "${TOKEN,,}" ]]; then
   echo "Error: game.boom() mismatch"
+  exit 1
+fi
+if [[ -z "$TOKEN_REF" && -z "$BOOM_REF" ]]; then
+  echo "Error: game has neither token() nor boom()"
   exit 1
 fi
 

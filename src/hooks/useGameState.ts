@@ -454,7 +454,9 @@ export function useGameState() {
 
   const isChoiceTxPending =
     tx.isPending &&
-    (tx.pendingAction === "cashOut" || tx.pendingAction === "nextLevel");
+    (tx.pendingAction === "submitResult" ||
+      tx.pendingAction === "cashOut" ||
+      tx.pendingAction === "nextLevel");
 
   const canTransact = chain.isConnected && !chain.isWrongChain;
   const canPlayBoard =
@@ -471,6 +473,9 @@ export function useGameState() {
       return SWITCH_TO_BASE_MAINNET_MESSAGE;
     }
     if (isWhackResolving) return "Resolving whack…";
+    if (tx.isPending && tx.pendingAction === "submitResult") {
+      return "Recording result on Base…";
+    }
     if (tx.isPending && tx.pendingAction === "cashOut") {
       return "Minting $BOOM on Base…";
     }

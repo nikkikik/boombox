@@ -3,7 +3,7 @@
     "type": "constructor",
     "inputs": [
       {
-        "name": "boom_",
+        "name": "token_",
         "type": "address",
         "internalType": "contract BoomboxToken"
       }
@@ -51,51 +51,8 @@
   },
   {
     "type": "function",
-    "name": "boom",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "contract BoomboxToken"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "canDailyCheckIn",
-    "inputs": [
-      {
-        "name": "player",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "cashOut",
-    "inputs": [
-      {
-        "name": "won",
-        "type": "bool",
-        "internalType": "bool"
-      },
-      {
-        "name": "reward",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
@@ -108,57 +65,8 @@
   },
   {
     "type": "function",
-    "name": "getLevelChance",
-    "inputs": [
-      {
-        "name": "level",
-        "type": "uint8",
-        "internalType": "uint8"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint8",
-        "internalType": "uint8"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "levelChances",
-    "inputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint8",
-        "internalType": "uint8"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "nextLevel",
-    "inputs": [
-      {
-        "name": "won",
-        "type": "bool",
-        "internalType": "bool"
-      },
-      {
-        "name": "reward",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
@@ -176,7 +84,7 @@
       {
         "name": "status",
         "type": "uint8",
-        "internalType": "enum BoomboxGame.GameStatus"
+        "internalType": "enum BoomboxGameV1.GameStatus"
       },
       {
         "name": "level",
@@ -203,29 +111,41 @@
   },
   {
     "type": "function",
-    "name": "rewardForLevel",
-    "inputs": [
-      {
-        "name": "level",
-        "type": "uint8",
-        "internalType": "uint8"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "pure"
-  },
-  {
-    "type": "function",
     "name": "startGame",
     "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "submitResult",
+    "inputs": [
+      {
+        "name": "won",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "reward",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "token",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract BoomboxToken"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "event",
