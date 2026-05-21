@@ -57,6 +57,19 @@ export function useBoomboxReads() {
     },
   });
 
+  const {
+    data: canCheckIn,
+    isError: canCheckInUnavailable,
+    refetch: refetchCanCheckIn,
+  } = useReadContract({
+    address: GAME_CONTRACT_ADDRESS,
+    abi: boomboxGameAbi,
+    functionName: "canDailyCheckIn",
+    args: walletAddress ? [walletAddress] : undefined,
+    chainId: appChain.id,
+    query: { enabled, retry: false, refetchInterval: BALANCE_REFETCH_MS },
+  });
+
   const player: ChainPlayerState | null = parsePlayerTuple(
     playerRaw as readonly [number, number, bigint, bigint, bigint] | undefined
   );
@@ -89,13 +102,17 @@ export function useBoomboxReads() {
       isOnChainEnabled && !!walletAddress && boomBalanceWei === undefined,
     isBalanceFetching,
     isBalanceError,
-    canDailyCheckIn: false,
-    canDailyCheckInUnavailable: true,
+    canDailyCheckIn: canCheckIn === true,
+    canDailyCheckInUnavailable: canCheckInUnavailable,
     isPlayerLoading: enabled && !isPlayerFetched,
     refetchBalance,
     refetchPlayer: fetchPlayer,
     refetchAll: async () => {
-      await Promise.all([refetchBalance(), refetchPlayer()]);
+      await Promise.all([
+        refetchBalance(),
+        refetchPlayer(),
+        refetchCanCheckIn(),
+      ]);
     },
   };
 }

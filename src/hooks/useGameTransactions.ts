@@ -11,7 +11,6 @@ import { appChain } from "@/config/wagmi";
 
 export type GameTxAction =
   | "startGame"
-  | "submitResult"
   | "cashOut"
   | "nextLevel"
   | "dailyCheckIn"
@@ -20,8 +19,7 @@ export type GameTxAction =
 export type RefetchBoomBalance = () => Promise<unknown>;
 
 const CASH_OUT_GAS = BigInt(400_000);
-const SUBMIT_RESULT_GAS = BigInt(250_000);
-const NEXT_LEVEL_GAS = BigInt(200_000);
+const NEXT_LEVEL_GAS = BigInt(350_000);
 const START_GAME_GAS = BigInt(200_000);
 const DAILY_CHECKIN_GAS = BigInt(300_000);
 
@@ -126,76 +124,47 @@ export function useGameTransactions(options?: {
     );
   }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
 
-  /** Close a stale Playing run before startGame */
+  /** Close stale Playing run before startGame (v2: nextLevel(false, 0)) */
   const forfeitRun = useCallback(async () => {
     if (!isOnChainEnabled || !walletAddress) return { ok: false };
-    return runWrite("submitResult", () =>
+    return runWrite("nextLevel", () =>
       writeContractAsync({
         ...writeOpts(),
-        functionName: "submitResult",
+        functionName: "nextLevel",
         args: [false, BigInt(0)],
-        gas: SUBMIT_RESULT_GAS,
+        gas: NEXT_LEVEL_GAS,
       })
     );
   }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
 
-  const submitResult = useCallback(
+  const cashOut = useCallback(
     async (won: boolean, rewardWei: bigint) => {
       if (!isOnChainEnabled || !walletAddress) return { ok: false };
-      return runWrite("submitResult", () =>
+      return runWrite("cashOut", () =>
         writeContractAsync({
           ...writeOpts(),
-          functionName: "submitResult",
+          functionName: "cashOut",
           args: [won, rewardWei],
-          gas: SUBMIT_RESULT_GAS,
+          gas: CASH_OUT_GAS,
         })
       );
     },
     [runWrite, writeContractAsync, writeOpts, walletAddress]
   );
 
-  const cashOutMint = useCallback(async () => {
-    if (!isOnChainEnabled || !walletAddress) return { ok: false };
-    return runWrite("cashOut", () =>
-      writeContractAsync({
-        ...writeOpts(),
-        functionName: "cashOut",
-        gas: CASH_OUT_GAS,
-      })
-    );
-  }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
-
-  /** Win on current level → submitResult → cashOut (two txs, matches mainnet contract) */
-  const cashOut = useCallback(
-    async (won: boolean, rewardWei: bigint) => {
-      if (!won) return forfeitRun();
-      const submit = await submitResult(true, rewardWei);
-      if (!submit.ok) return submit;
-      return cashOutMint();
-    },
-    [forfeitRun, submitResult, cashOutMint]
-  );
-
-  const nextLevelAdvance = useCallback(async () => {
-    if (!isOnChainEnabled || !walletAddress) return { ok: false };
-    return runWrite("nextLevel", () =>
-      writeContractAsync({
-        ...writeOpts(),
-        functionName: "nextLevel",
-        gas: NEXT_LEVEL_GAS,
-      })
-    );
-  }, [runWrite, writeContractAsync, writeOpts, walletAddress]);
-
-  /** Win on current level → submitResult → nextLevel (two txs, matches mainnet contract) */
   const nextLevel = useCallback(
     async (won: boolean, rewardWei: bigint) => {
-      if (!won) return forfeitRun();
-      const submit = await submitResult(true, rewardWei);
-      if (!submit.ok) return submit;
-      return nextLevelAdvance();
+      if (!isOnChainEnabled || !walletAddress) return { ok: false };
+      return runWrite("nextLevel", () =>
+        writeContractAsync({
+          ...writeOpts(),
+          functionName: "nextLevel",
+          args: [won, rewardWei],
+          gas: NEXT_LEVEL_GAS,
+        })
+      );
     },
-    [forfeitRun, submitResult, nextLevelAdvance]
+    [runWrite, writeContractAsync, writeOpts, walletAddress]
   );
 
   const dailyCheckIn = useCallback(async () => {
@@ -212,7 +181,6 @@ export function useGameTransactions(options?: {
   return {
     startGame,
     forfeitRun,
-    submitResult,
     cashOut,
     nextLevel,
     dailyCheckIn,

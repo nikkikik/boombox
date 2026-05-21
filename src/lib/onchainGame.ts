@@ -44,10 +44,10 @@ export function boomNumberToWei(amount: number): bigint {
   return parseEther(amount.toFixed(0));
 }
 
-/** Matches contract: 100 * 10^18 * 2^(level-1) */
+/** Matches contract v2: 100 * 10^18 * 2^(level-1) */
 export function rewardWeiForLevel(level: number): bigint {
   if (level < 1) return BigInt(0);
-  return (BASE_ROUND_REWARD_BOOM * WEI_PER_BOOM) << BigInt(level - 1);
+  return BigInt(100) * BigInt(10 ** 18) << BigInt(level - 1);
 }
 
 export function rewardBoomForLevel(level: number): number {

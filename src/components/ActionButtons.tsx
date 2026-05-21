@@ -44,8 +44,6 @@ export function ActionButtons({
   const txLabel = (() => {
     if (!isTxPending) return null;
     switch (pendingAction) {
-      case "submitResult":
-        return "Recording on Base…";
       case "cashOut":
         return "Claiming on Base…";
       case "nextLevel":
@@ -134,9 +132,7 @@ export function ActionButtons({
           </motion.button>
         </div>
         <p className="text-center text-[10px] text-slate-400">
-          {isMockMode
-            ? "Mock cashOut tx"
-            : "submitResult + cashOut on Base (2 confirmations)"}
+          {isMockMode ? "Mock cashOut tx" : "cashOut(won, reward) on Base"}
         </p>
       </div>
     );
