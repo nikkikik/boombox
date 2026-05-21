@@ -7,8 +7,8 @@ Production URL: **https://boombox-one.vercel.app**
 | Файл | Назначение |
 |------|------------|
 | `src/app/.well-known/farcaster.json/route.ts` | Manifest Mini App |
-| `src/app/icon.tsx` | Иконка 1024×1024 |
-| `src/app/splash/route.tsx` | Splash 200×200 |
+| `public/icon.png` | Иконка Mini App 1024×1024 |
+| `public/splash.png` | Splash 200×200 |
 | `src/app/opengraph-image.tsx` | OG / hero 1200×630 |
 | `src/hooks/useFarcasterMiniApp.ts` | `sdk.actions.ready()` в Warpcast |
 | `src/config/wagmi.ts` | `farcasterMiniApp()` connector |
@@ -43,7 +43,7 @@ Redeploy после изменений.
 
 - `accountAssociation` в `src/lib/farcasterManifest.ts`
 - `webhookUrl`: `/api/webhook`
-- URL картинок: `/icon.png`, `/splash.png`, `/image.png` (rewrite на динамические PNG)
+- URL картинок: `/icon.png`, `/splash.png` (статика в `public/`), `/image.png` (OG)
 
 После деплоя проверьте manifest — в JSON должны быть `accountAssociation` и `miniapp` / `frame`.
 

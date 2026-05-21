@@ -12,7 +12,7 @@ const DEFAULT_ACCOUNT_ASSOCIATION = {
 function buildMiniAppConfig() {
   return {
     version: "1",
-    name: "Boombox Warplet",
+    name: "Boombox",
     iconUrl: `${APP_URL}/icon.png`,
     homeUrl: APP_URL,
     imageUrl: `${APP_URL}/image.png`,
@@ -27,7 +27,7 @@ function buildMiniAppConfig() {
     tags: ["base", "game", "warplet", "boombox", "onchain"],
     heroImageUrl: `${APP_URL}/image.png`,
     tagline: "Risk it on Base",
-    ogTitle: "Boombox Warplet",
+    ogTitle: "Boombox",
     ogDescription: "Cosmic Whack a Mole mini game on Base Mainnet.",
     ogImageUrl: `${APP_URL}/image.png`,
     requiredChains: ["eip155:8453"],
@@ -68,7 +68,7 @@ export function buildMiniAppEmbedMeta() {
       title: "Play Boombox",
       action: {
         type: "launch_miniapp",
-        name: "Boombox Warplet",
+        name: "Boombox",
         url: APP_URL,
         splashImageUrl: `${APP_URL}/splash.png`,
         splashBackgroundColor: "#050508",
