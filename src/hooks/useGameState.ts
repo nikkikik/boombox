@@ -107,29 +107,73 @@ export function useGameState() {
     spawnTimers.current.set(key, t);
   }, []);
 
-  const syncFromChain = useCallback(() => {
-    const p = chain.player;
-    if (!p || !chain.isOnChain) return;
+  const syncFromChain = useCallback(
+    (opts?: { force?: boolean }) => {
+      const p = chain.player;
+      if (!p || !chain.isOnChain) return;
 
-    const phase = chainStatusToPhase(p.status);
-    const roundPoints = boomWeiToNumber(p.potentialReward);
-    const level = p.level;
+      const isActiveOnChain =
+        p.status === CHAIN_STATUS.Playing ||
+        p.status === CHAIN_STATUS.Choosing;
 
-    setState((s) => ({
-      ...s,
-      phase,
-      level,
-      multiplier: multiplierForLevel(level),
-      roundPoints,
-      hasAttempt: p.status === CHAIN_STATUS.Playing,
-      ...(phase !== "PLAYING" ? { activeWarplets: [] } : {}),
-    }));
-  }, [chain.player, chain.isOnChain]);
+      if (isActiveOnChain && !localSessionRef.current && !opts?.force) {
+        setState((s) => ({
+          ...s,
+          phase: "WAITING_FOR_TX",
+          level: 0,
+          roundPoints: 0,
+          hasAttempt: false,
+          activeWarplets: [],
+          lastResult:
+            "Tap Start game — closes any stale on-chain run, then begins Level 1",
+        }));
+        return;
+      }
+
+      const phase = chainStatusToPhase(p.status);
+      const roundPoints = boomWeiToNumber(p.potentialReward);
+      const level = p.level;
+
+      setState((s) => ({
+        ...s,
+        phase,
+        level,
+        multiplier: multiplierForLevel(level),
+        roundPoints,
+        hasAttempt: p.status === CHAIN_STATUS.Playing,
+        ...(phase !== "PLAYING" ? { activeWarplets: [] } : {}),
+      }));
+    },
+    [chain.player, chain.isOnChain]
+  );
 
   useEffect(() => {
-    if (!chain.isOnChain || !chain.player || localSessionRef.current) return;
-    syncFromChain();
+    if (!chain.isOnChain || !chain.player) return;
+    if (localSessionRef.current) {
+      syncFromChain({ force: true });
+      return;
+    }
+    if (
+      chain.player.status === CHAIN_STATUS.Idle ||
+      chain.player.status === CHAIN_STATUS.GameOver
+    ) {
+      syncFromChain({ force: true });
+    } else {
+      syncFromChain();
+    }
   }, [chain.player, chain.isOnChain, syncFromChain]);
+
+  useEffect(() => {
+    if (!chain.isConnected || chain.isWrongChain) return;
+    setState((s) => {
+      if (s.phase !== "WAITING_FOR_TX") return s;
+      if (!s.lastResult?.includes("Connect wallet")) return s;
+      return {
+        ...s,
+        lastResult: "Tap Start game on Base Mainnet",
+      };
+    });
+  }, [chain.isConnected, chain.isWrongChain]);
 
   const spawnWarplet = useCallback(() => {
     setState((s) => {
@@ -480,9 +524,14 @@ export function useGameState() {
     }
     switch (phase) {
       case "WAITING_FOR_TX":
-        return chain.isOnChain
-          ? "Pay gas only — confirm startGame on Base Mainnet"
-          : "Connect wallet to play";
+        if (!chain.isConnected) return "Connect wallet to play";
+        if (
+          chain.player?.status === CHAIN_STATUS.Playing ||
+          chain.player?.status === CHAIN_STATUS.Choosing
+        ) {
+          return "Stale on-chain run — tap Start game to reset & play";
+        }
+        return "Tap Start game on Base Mainnet";
       case "PLAYING":
         return hasAttempt
           ? `One shot · Level ${level} · ${chance}% · ${roundPoints.toFixed(0)} $BOOM banked`
