@@ -73,12 +73,12 @@ contract BoomboxGame {
         emit DailyCheckIn(msg.sender, DAILY_CHECKIN_REWARD);
     }
 
+    /// @notice Start a fresh run in one tx (resets stale Playing/Choosing without forfeit tx)
     function startGame() external {
         PlayerState storage p = players[msg.sender];
-        require(
-            p.status == GameStatus.Idle || p.status == GameStatus.GameOver,
-            "Finish or cash out first"
-        );
+        if (p.status == GameStatus.Playing || p.status == GameStatus.Choosing) {
+            p.potentialReward = 0;
+        }
         p.status = GameStatus.Playing;
         p.level = 1;
         p.potentialReward = 0;

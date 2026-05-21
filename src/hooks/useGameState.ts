@@ -232,36 +232,14 @@ export function useGameState() {
 
     startInFlightRef.current = true;
 
-    const needsForfeit =
-      tx.isOnChain && chain.player?.status === CHAIN_STATUS.Playing;
-
     setState((s) => ({
       ...s,
       phase: "WAITING_FOR_TX",
-      lastResult: needsForfeit
-        ? "Step 1/2: close stale run on Base…"
-        : "Confirm startGame in wallet…",
+      lastResult: "Confirm startGame on Base…",
     }));
 
     try {
-      if (needsForfeit) {
-        const close = await tx.forfeitRun();
-        if (!close.ok) {
-          setState((s) => ({
-            ...s,
-            phase: "GAME_OVER",
-            lastResult: tx.error?.message?.slice(0, 80) ?? "Submit cancelled",
-          }));
-          return false;
-        }
-        await chain.refetchAll();
-        setState((s) => ({
-          ...s,
-          lastResult: "Step 2/2: confirm startGame in wallet…",
-        }));
-      }
-
-      const { ok, hash } = await tx.startGame();
+      const { ok, hash } = await tx.startGameFresh(chain.player?.status);
       if (!ok) {
         setState((s) => ({
           ...s,
