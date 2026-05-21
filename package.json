@@ -15,6 +15,7 @@
   "dependencies": {
     "@base-org/account": "^2.5.6",
     "@farcaster/frame-sdk": "^0.0.35",
+    "@farcaster/miniapp-sdk": "^0.3.0",
     "@farcaster/miniapp-wagmi-connector": "^2.0.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
@@ -27,6 +28,9 @@
     "three": "^0.184.0",
     "viem": "^2.21.54",
     "wagmi": "^2.14.6"
+  },
+  "overrides": {
+    "use-sync-external-store": "^1.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
