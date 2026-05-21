@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAccount } from "wagmi";
+import { useFarcasterMiniApp } from "@/hooks/useFarcasterMiniApp";
 import { useGameState } from "@/hooks/useGameState";
 import { buildFarcasterShareText, getFarcasterShareUrl } from "@/lib/farcaster";
 import { CosmicBackground } from "./CosmicBackground";
@@ -10,24 +11,9 @@ import { GameBoard } from "./GameBoard";
 import { BottomPanel } from "./BottomPanel";
 
 export function GameScreen() {
+  useFarcasterMiniApp();
   const game = useGameState();
   const { isConnected } = useAccount();
-
-  useEffect(() => {
-    let cancelled = false;
-    async function initFrame() {
-      try {
-        const { sdk } = await import("@farcaster/frame-sdk");
-        if (!cancelled) await sdk.actions.ready();
-      } catch {
-        /* not in Farcaster frame */
-      }
-    }
-    initFrame();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const handleStartGame = useCallback(() => {
     void game.startGame();
