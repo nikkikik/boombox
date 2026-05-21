@@ -30,6 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
+      <head>
+        <meta name="base:app_id" content="6a0f7b0e86fe5ef216020998" />
+      </head>
       <body className="font-body antialiased">
         <Providers>{children}</Providers>
       </body>
