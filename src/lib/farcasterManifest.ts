@@ -1,5 +1,9 @@
 import { APP_URL } from "@/constants/appUrl";
 
+/** Bump path when Farcaster caches an old icon (clients cache by URL). */
+const MINIAPP_ICON_URL = `${APP_URL}/miniapp-icon.png`;
+const MINIAPP_SPLASH_URL = `${APP_URL}/miniapp-splash.png`;
+
 /** Verified domain association for boombox-one.vercel.app (fid 770246) */
 const DEFAULT_ACCOUNT_ASSOCIATION = {
   header:
@@ -13,11 +17,11 @@ function buildMiniAppConfig() {
   return {
     version: "1",
     name: "Boombox",
-    iconUrl: `${APP_URL}/icon.png`,
+    iconUrl: MINIAPP_ICON_URL,
     homeUrl: APP_URL,
     imageUrl: `${APP_URL}/image.png`,
     buttonTitle: "Play Boombox",
-    splashImageUrl: `${APP_URL}/splash.png`,
+    splashImageUrl: MINIAPP_SPLASH_URL,
     splashBackgroundColor: "#050508",
     webhookUrl: `${APP_URL}/api/webhook`,
     subtitle: "Whack Warplets on Base",
@@ -70,7 +74,7 @@ export function buildMiniAppEmbedMeta() {
         type: "launch_miniapp",
         name: "Boombox",
         url: APP_URL,
-        splashImageUrl: `${APP_URL}/splash.png`,
+        splashImageUrl: MINIAPP_SPLASH_URL,
         splashBackgroundColor: "#050508",
       },
     },
