@@ -37,5 +37,22 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"
-  }
+  },
+  "description": "Cosmic Whack-a-Mole mini-app for **Base** and **Farcaster**. Hit Warplets, stack multipliers, cash out or risk the next round.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nikkikik/boombox.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nikkikik/boombox/issues"
+  },
+  "homepage": "https://github.com/nikkikik/boombox#readme"
 }

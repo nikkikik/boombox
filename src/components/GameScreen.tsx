@@ -78,7 +78,6 @@ export function GameScreen() {
         showChoice={game.showChoice}
         isTxPending={game.isChoiceTxPending || game.pendingAction === "startGame"}
         pendingAction={game.pendingAction}
-        isMockMode={game.isMockMode}
         isConnected={isConnected}
         switchNetworkMessage={game.switchNetworkMessage}
         onStartGame={handleStartGame}

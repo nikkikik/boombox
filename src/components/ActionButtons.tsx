@@ -14,7 +14,6 @@ interface ActionButtonsProps {
   showChoice: boolean;
   isTxPending: boolean;
   pendingAction?: string | null;
-  isMockMode: boolean;
   isConnected: boolean;
   isWrongChain?: boolean;
   switchNetworkMessage?: string;
@@ -33,7 +32,6 @@ export function ActionButtons({
   showChoice,
   isTxPending,
   pendingAction,
-  isMockMode,
   isConnected,
   isWrongChain,
   switchNetworkMessage,
@@ -81,7 +79,7 @@ export function ActionButtons({
                 : "Start game"}
           {!isTxPending && isConnected && (
             <span className="mt-1 block text-[10px] font-semibold normal-case opacity-80">
-              {isMockMode ? "Mock startGame tx (Base)" : "startGame on Base"}
+              startGame on Base
             </span>
           )}
         </motion.button>
@@ -132,7 +130,7 @@ export function ActionButtons({
           </motion.button>
         </div>
         <p className="text-center text-[10px] text-slate-400">
-          {isMockMode ? "Mock cashOut tx" : "cashOut(won, reward) on Base"}
+          cashOut(won, reward) on Base
         </p>
       </div>
     );

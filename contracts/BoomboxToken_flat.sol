@@ -1,7 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IERC20} from "./interfaces/IERC20.sol";
+// =============================================================================
+// BoomboxToken — flattened for BaseScan verification (Base Mainnet)
+// Contract to verify: BoomboxToken
+// Address: 0x63bBE8362b4e25D51AD0A86c7e45d3B2779E5f6C
+//
+// No OpenZeppelin: this project uses a minimal IERC20 interface (inlined below).
+// Compiler: Solidity 0.8.20+, Optimization enabled (200 runs recommended)
+// Constructor arguments: none
+// =============================================================================
+
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+}
 
 /// @title BoomboxToken — $BOOM (18 decimals), mint only by BoomboxGame
 contract BoomboxToken is IERC20 {
@@ -27,7 +44,7 @@ contract BoomboxToken is IERC20 {
     }
 
     modifier onlyGame() {
-        require(msg.sender == game, "Only game can mint");
+        require(msg.sender == game, "Only game");
         _;
     }
 

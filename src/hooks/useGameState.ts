@@ -87,9 +87,7 @@ export function useGameState() {
     roundPoints: 0,
     hasAttempt: false,
     activeWarplets: [],
-    lastResult: chain.isOnChain
-      ? `Connect wallet & start on ${chain.appChainName}`
-      : "Set contract addresses in .env.local",
+    lastResult: `Connect wallet & start on ${chain.appChainName}`,
     soundOn: true,
   });
 
@@ -527,7 +525,6 @@ export function useGameState() {
     isChoiceTxPending,
     isWhackResolving,
     pendingAction: tx.pendingAction,
-    isMockMode: tx.isMockMode,
     isOnChain: chain.isOnChain,
     whack,
     startGame,

@@ -23,7 +23,6 @@ interface BottomPanelProps {
   showChoice: boolean;
   isTxPending: boolean;
   pendingAction?: string | null;
-  isMockMode: boolean;
   isConnected: boolean;
   switchNetworkMessage?: string;
   onStartGame: () => void;
@@ -48,7 +47,6 @@ export function BottomPanel({
   showChoice,
   isTxPending,
   pendingAction,
-  isMockMode,
   isConnected,
   switchNetworkMessage,
   onStartGame,
@@ -101,7 +99,6 @@ export function BottomPanel({
         showChoice={showChoice}
         isTxPending={isTxPending}
         pendingAction={pendingAction}
-        isMockMode={isMockMode}
         isConnected={isConnected}
         isWrongChain={isWrongChain}
         switchNetworkMessage={switchNetworkMessage}

@@ -187,7 +187,6 @@ export function useGameTransactions(options?: {
     isPending,
     pendingAction,
     error: error ?? (lastTxError ? new Error(lastTxError) : null),
-    isMockMode: false,
     isConnected,
     isOnChain: isOnChainEnabled,
     walletAddress,

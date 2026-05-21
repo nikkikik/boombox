@@ -1,88 +1,57 @@
 # Boombox Warplet
 
-Cosmic Whack-a-Mole mini-app for **Base** and **Farcaster**. Hit Warplets, stack multipliers, cash out or risk the next round.
+Cosmic Whack-a-Mole mini-app for **Base Mainnet** and **Farcaster**. Hit Warplets, stack multipliers, cash out or risk the next round.
 
-Configured per the [Base app quickstart](https://docs.base.org/apps/quickstart/build-app): `baseAccount` connector, Base Sepolia, SSR-safe wagmi + cookie storage.
+Configured per the [Base app quickstart](https://docs.base.org/apps/quickstart/build-app): `baseAccount` connector, Base Mainnet only, SSR-safe wagmi + cookie storage.
+
+## Contracts (Base Mainnet v2)
+
+| Contract | Address |
+|----------|---------|
+| **BoomboxToken** | `0x63bBE8362b4e25D51AD0A86c7e45d3B2779E5f6C` |
+| **BoomboxGame** | `0xc45D9d59842128eFb32E2644a227431c62d0919A` |
+
+Addresses are defined in `src/constants/addresses.ts`. Game flow uses single-tx `cashOut(won, reward)` and `nextLevel(won, reward)`.
+
+- [Game on BaseScan](https://basescan.org/address/0xc45D9d59842128eFb32E2644a227431c62d0919A)
+- [Token on BaseScan](https://basescan.org/address/0x63bBE8362b4e25D51AD0A86c7e45d3B2779E5f6C)
 
 ## Stack
 
 - Next.js 15 · Tailwind · Framer Motion
 - wagmi · viem · `@base-org/account` (Base Smart Wallet)
-- @farcaster/frame-sdk
+- @farcaster/frame-sdk · `@farcaster/miniapp-wagmi-connector`
 
 ## Run locally
 
 ```bash
 npm install
+cp .env.example .env.local   # optional: custom RPC
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). **Keep that terminal open** — closing it stops the server.
+Open [http://localhost:3000](http://localhost:3000).
 
 ### If localhost stops working
 
-This is usually **not** caused by every code edit. Common causes:
+| Symptom | Fix |
+|--------|-----|
+| Connection refused | `npm run dev` |
+| HTTP 500 / white screen | `npm run restart` |
+| Wrong port | Use **http://localhost:3000** |
 
-| Symptom | Likely cause | Fix |
-|--------|----------------|-----|
-| Connection refused | Dev server not running (terminal closed) | `npm run dev` |
-| HTTP 500 / white screen | Corrupted `.next` (often after `npm run build` while dev was running) | `npm run restart` |
-| Wrong port / old tab | Second server on 3001 | Use **http://localhost:3000** or `npm run restart` |
+## Wallet & network
 
-**One command fix** (kills old processes, clears cache, starts fresh):
-
-```bash
-npm run restart
-```
-
-In Cursor: **Terminal → Run Task… → “Boombox: restart (clean cache)”**.
-
-Hot reload (HMR) should work for normal edits — you only need `restart` when the page is actually broken.
-
-## Base wallet
-
-1. Click **Connect Wallet** in the header.
-2. Connect via **Base Account** (smart wallet) or browser wallet (MetaMask).
-3. App uses **Base Sepolia** by default — get test ETH from [Base faucets](https://docs.base.org/base-chain/network-information/network-faucets).
-
-## Save score onchain
-
-1. Install [Foundry](https://book.getfoundry.sh/getting-started/installation).
-2. Deploy to Base Sepolia:
-
-```bash
-cd contracts
-forge init --no-git  # skip if already initialized
-# copy BoomboxScore.sol into src/ if needed
-forge create src/BoomboxScore.sol:BoomboxScore \
-  --rpc-url https://sepolia.base.org \
-  --private-key $YOUR_DEPLOYER_KEY
-```
-
-3. Copy contract address to `.env.local`:
-
-```
-NEXT_PUBLIC_SCORE_CONTRACT_ADDRESS=0xYourAddress
-```
-
-4. Restart `npm run dev` and use **Save on Base**.
+1. Click **Connect Wallet**.
+2. Use **Base Account** (Coinbase Smart Wallet), **Farcaster**, or a browser wallet (MetaMask).
+3. Switch to **Base Mainnet** if prompted.
 
 ## Environment
 
-**Local:** copy `.env.example` → `.env.local`
-
-**Vercel / production:** set these in the project → **Settings → Environment Variables**, or rely on committed `.env.production`:
-
 | Variable | Description |
 |----------|-------------|
-| `NEXT_PUBLIC_BOOM_TOKEN_ADDRESS` | BoomboxToken on Base Sepolia |
-| `NEXT_PUBLIC_GAME_CONTRACT_ADDRESS` | BoomboxGame on Base Sepolia |
-| `NEXT_PUBLIC_SCORE_CONTRACT_ADDRESS` | Optional legacy score contract |
-| `NEXT_PUBLIC_USE_MAINNET` | `true` = Base mainnet, else Sepolia |
-| `NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL` | Optional custom RPC |
-
-If addresses are missing at build time, the app runs in **mock mode** (no wallet txs, Daily Check-in shows “No contract”).
-After changing env on Vercel, **redeploy** the project.
+| `NEXT_PUBLIC_BASE_MAINNET_RPC_URL` | Optional custom RPC (Alchemy/Infura recommended for production) |
+| `ETHERSCAN_API_KEY` | Local only — for `forge verify` / BaseScan scripts |
 
 ## Game config
 
@@ -90,4 +59,8 @@ Spawn weights and stages: `src/lib/gameConfig.ts`
 
 ## Deploy
 
-Push to GitHub → deploy on Vercel (Next.js preset).
+Push to GitHub → deploy on Vercel (Next.js preset). Set `NEXT_PUBLIC_BASE_MAINNET_RPC_URL` in Vercel env for production.
+
+## Verify contracts
+
+See `contracts/VERIFY-BASESCAN.md`.
