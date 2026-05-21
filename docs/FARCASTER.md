@@ -37,15 +37,15 @@ FARCASTER_ACCOUNT_ASSOCIATION_SIGNATURE=...
 
 Redeploy после изменений.
 
-## Шаг 2 — Верификация домена (account association)
+## Шаг 2 — Верификация домена
 
-1. Откройте [Farcaster Developer Tools — Mini Apps](https://farcaster.xyz/~/developers/mini-apps/manifest)
-2. Введите домен: `boombox-one.vercel.app` (без `https://`)
-3. Сгенерируйте **account association** (подпись с Farcaster-аккаунта)
-4. Скопируйте `header`, `payload`, `signature` в Vercel env (см. выше)
-5. Redeploy
+**Уже в коде** для `boombox-one.vercel.app` (fid `770246`):
 
-Без этого приложение работает, но не будет **verified** в каталоге.
+- `accountAssociation` в `src/lib/farcasterManifest.ts`
+- `webhookUrl`: `/api/webhook`
+- URL картинок: `/icon.png`, `/splash.png`, `/image.png` (rewrite на динамические PNG)
+
+После деплоя проверьте manifest — в JSON должны быть `accountAssociation` и `miniapp` / `frame`.
 
 ## Шаг 3 — Hosted manifest (опционально)
 
