@@ -32,7 +32,7 @@ export function Hole({
   const runWhack = async () => {
     if (disabled || isResolving) return;
     const now = Date.now();
-    if (now - lastTapAt.current < 280) return;
+    if (now - lastTapAt.current < 400) return;
     lastTapAt.current = now;
 
     const result = await onWhack(index);
@@ -48,14 +48,7 @@ export function Hole({
     <motion.button
       type="button"
       disabled={disabled || isResolving}
-      onPointerDown={(e) => {
-        if (disabled || isResolving) return;
-        e.preventDefault();
-        void runWhack();
-      }}
-      onClick={(e) => {
-        e.preventDefault();
-      }}
+      onClick={() => void runWhack()}
       className={`game-hole group relative aspect-square w-full touch-manipulation overflow-visible rounded-full border-[3px] border-[#3d3560] bg-[#0a0814] shadow-[0_0_12px_rgba(100,80,200,0.15),inset_0_4px_12px_rgba(0,0,0,0.8)] disabled:cursor-not-allowed ${
         hasTarget ? "has-warplet-target ring-2 ring-amber-400/70 ring-offset-1 ring-offset-[#0a0814]" : ""
       } ${isResolving ? "opacity-80" : ""}`}

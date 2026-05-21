@@ -94,6 +94,7 @@ export function useGameState() {
   const [isWhackResolving, setIsWhackResolving] = useState(false);
   const spawnTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const localSessionRef = useRef(false);
+  const startInFlightRef = useRef(false);
 
   const clearSpawnTimers = useCallback(() => {
     spawnTimers.current.forEach((t) => clearTimeout(t));
@@ -134,25 +135,27 @@ export function useGameState() {
       const roundPoints = boomWeiToNumber(p.potentialReward);
       const level = p.level;
 
-      setState((s) => ({
-        ...s,
-        phase,
-        level,
-        multiplier: multiplierForLevel(level),
-        roundPoints,
-        hasAttempt: p.status === CHAIN_STATUS.Playing,
-        ...(phase !== "PLAYING" ? { activeWarplets: [] } : {}),
-      }));
+      setState((s) => {
+        if (s.phase === "CHOOSING_REWARD") return s;
+
+        return {
+          ...s,
+          phase,
+          level,
+          multiplier: multiplierForLevel(level),
+          roundPoints,
+          hasAttempt: p.status === CHAIN_STATUS.Playing,
+          ...(phase !== "PLAYING" ? { activeWarplets: [] } : {}),
+        };
+      });
     },
     [chain.player, chain.isOnChain]
   );
 
   useEffect(() => {
     if (!chain.isOnChain || !chain.player) return;
-    if (localSessionRef.current) {
-      syncFromChain({ force: true });
-      return;
-    }
+    if (localSessionRef.current) return;
+
     if (
       chain.player.status === CHAIN_STATUS.Idle ||
       chain.player.status === CHAIN_STATUS.GameOver
@@ -213,6 +216,8 @@ export function useGameState() {
   useEffect(() => () => clearSpawnTimers(), [clearSpawnTimers]);
 
   const startGame = useCallback(async (): Promise<boolean> => {
+    if (startInFlightRef.current || tx.isPending) return false;
+
     if (!tx.isConnected) {
       setState((s) => ({ ...s, lastResult: "Connect wallet to start" }));
       return false;
@@ -225,52 +230,63 @@ export function useGameState() {
       return false;
     }
 
+    startInFlightRef.current = true;
+
+    const needsForfeit =
+      tx.isOnChain && chain.player?.status === CHAIN_STATUS.Playing;
+
     setState((s) => ({
       ...s,
       phase: "WAITING_FOR_TX",
-      lastResult: "Confirm startGame in wallet…",
+      lastResult: needsForfeit
+        ? "Step 1/2: close stale run on Base…"
+        : "Confirm startGame in wallet…",
     }));
 
-    if (tx.isOnChain && chain.player?.status === CHAIN_STATUS.Playing) {
-      setState((s) => ({
-        ...s,
-        lastResult: "Closing previous run on Base…",
-      }));
-      const close = await tx.forfeitRun();
-      if (!close.ok) {
+    try {
+      if (needsForfeit) {
+        const close = await tx.forfeitRun();
+        if (!close.ok) {
+          setState((s) => ({
+            ...s,
+            phase: "GAME_OVER",
+            lastResult: tx.error?.message?.slice(0, 80) ?? "Submit cancelled",
+          }));
+          return false;
+        }
+        await chain.refetchAll();
         setState((s) => ({
           ...s,
-          phase: "GAME_OVER",
-          lastResult: tx.error?.message?.slice(0, 80) ?? "Submit cancelled",
+          lastResult: "Step 2/2: confirm startGame in wallet…",
+        }));
+      }
+
+      const { ok, hash } = await tx.startGame();
+      if (!ok) {
+        setState((s) => ({
+          ...s,
+          phase: "WAITING_FOR_TX",
+          lastResult: tx.error?.message?.slice(0, 80) ?? "Transaction cancelled",
         }));
         return false;
       }
-      await chain.refetchAll();
-    }
 
-    const { ok, hash } = await tx.startGame();
-    if (!ok) {
+      clearSpawnTimers();
+      localSessionRef.current = true;
+      await chain.refetchAll();
+
       setState((s) => ({
         ...s,
-        phase: "WAITING_FOR_TX",
-        lastResult: tx.error?.message?.slice(0, 80) ?? "Transaction cancelled",
+        ...playingSnapshot(1),
+        roundPoints: 0,
+        lastResult: hash
+          ? `Game started · ${hash.slice(0, 10)}…`
+          : "Level 1 — good luck!",
       }));
-      return false;
+      return true;
+    } finally {
+      startInFlightRef.current = false;
     }
-
-    clearSpawnTimers();
-    localSessionRef.current = true;
-    await chain.refetchAll();
-
-    setState((s) => ({
-      ...s,
-      ...playingSnapshot(1),
-      roundPoints: 0,
-      lastResult: hash
-        ? `Game started · ${hash.slice(0, 10)}…`
-        : "Level 1 — good luck!",
-    }));
-    return true;
   }, [tx, chain, clearSpawnTimers]);
 
   const whack = useCallback(
@@ -344,9 +360,12 @@ export function useGameState() {
       }
 
       const newBank = state.roundPoints + earned;
+      clearSpawnTimers();
+      setIsWhackResolving(false);
       setState((s) => ({
         ...s,
         phase: "CHOOSING_REWARD",
+        hasAttempt: false,
         roundPoints: newBank,
         activeWarplets: s.activeWarplets.map((w) =>
           w.holeIndex === holeIndex
@@ -363,7 +382,6 @@ export function useGameState() {
           ),
         }));
       }, EXPLODE_MS);
-      setIsWhackResolving(false);
       return "hit";
     },
     [
@@ -459,7 +477,11 @@ export function useGameState() {
         return;
       }
       await chain.refetchAll();
-      const bank = chain.player ? boomWeiToNumber(chain.player.potentialReward) : state.roundPoints;
+      const refreshed = await chain.refetchPlayer();
+      const bank = refreshed
+        ? boomWeiToNumber(refreshed.potentialReward)
+        : state.roundPoints;
+      localSessionRef.current = true;
       setState((s) => ({
         ...s,
         ...playingSnapshot(nextLevel),
