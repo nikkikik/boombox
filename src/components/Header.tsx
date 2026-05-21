@@ -75,7 +75,7 @@ export function Header({ daily }: HeaderProps) {
             )}
           </div>
 
-          <div className="header-btn-size relative z-30 overflow-visible p-0">
+          <div className="header-btn-size relative z-30 min-w-[7.5rem] overflow-visible p-0 sm:min-w-36">
             <WalletButton headerSize />
           </div>
         </div>

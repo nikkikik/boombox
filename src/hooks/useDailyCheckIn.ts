@@ -58,7 +58,7 @@ export function useDailyCheckIn(chain: ChainReads, tx: GameTx) {
   const buttonLabel = (() => {
     if (showSuccess) return "Claimed!";
     if (tx.isPending) return "Claiming…";
-    if (chain.isPlayerLoading) return "…";
+    if (chain.isConnected && chain.isPlayerLoading) return "…";
     if (!chain.isConnected) return "Daily Check-in";
     if (chain.isWrongChain) return chain.switchNetworkMessage;
     if (canClaim) return "Daily Check-in";

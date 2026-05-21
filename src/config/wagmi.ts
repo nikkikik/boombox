@@ -1,4 +1,4 @@
-import { http, createConfig, createStorage, cookieStorage } from "wagmi";
+import { http, createConfig, createStorage, noopStorage } from "wagmi";
 import { base } from "wagmi/chains";
 import { baseAccount, injected } from "wagmi/connectors";
 import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector";
@@ -9,6 +9,12 @@ export const appChain = base;
 export const SWITCH_TO_BASE_MAINNET_MESSAGE =
   "Switch to Base Mainnet to play";
 
+/** cookieStorage + SSR often leaves mobile browsers stuck in "reconnecting" */
+function wagmiStorage() {
+  if (typeof window === "undefined") return noopStorage;
+  return createStorage({ storage: window.localStorage });
+}
+
 export const config = createConfig({
   chains: [base],
   connectors: [
@@ -18,7 +24,7 @@ export const config = createConfig({
     farcasterMiniApp(),
     injected(),
   ],
-  storage: createStorage({ storage: cookieStorage }),
+  storage: wagmiStorage(),
   ssr: true,
   transports: {
     [base.id]: http(

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useWalletPicker } from "@/contexts/WalletPickerContext";
 import { getLevelChance } from "@/lib/gameConfig";
 import type { GamePhase } from "@/hooks/useGameState";
 
@@ -39,6 +40,8 @@ export function ActionButtons({
   onCashOut,
   onNextLevel,
 }: ActionButtonsProps) {
+  const { openWalletPicker } = useWalletPicker();
+
   const txLabel = (() => {
     if (!isTxPending) return null;
     switch (pendingAction) {
@@ -53,7 +56,8 @@ export function ActionButtons({
     }
   })();
 
-  const txBlocked = !isConnected || isWrongChain;
+  const txBlocked = isWrongChain;
+  const needsWallet = !isConnected;
 
   if (showStartButton) {
     return (
@@ -66,7 +70,13 @@ export function ActionButtons({
         <motion.button
           type="button"
           disabled={isTxPending || txBlocked}
-          onClick={onStartGame}
+          onClick={() => {
+            if (needsWallet) {
+              openWalletPicker();
+              return;
+            }
+            onStartGame();
+          }}
           className="btn-play min-h-[56px] w-full px-4 py-3 text-sm font-black uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-45"
           whileTap={!txBlocked && !isTxPending ? { scale: 0.97 } : {}}
         >
