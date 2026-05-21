@@ -36,7 +36,8 @@ export function useGameTransactions(options?: {
   refetchBalance?: RefetchBoomBalance;
   refetchAfterDailyCheckIn?: () => Promise<unknown>;
 }) {
-  const { address: walletAddress, isConnected, chain } = useAccount();
+  const { address: walletAddress, isConnected, status, chain } = useAccount();
+  const walletReady = isConnected && status === "connected" && !!walletAddress;
   const publicClient = usePublicClient({ chainId: appChain.id });
   const { writeContractAsync, isPending: wagmiPending, error } = useWriteContract();
   const [pendingAction, setPendingAction] = useState<GameTxAction>(null);
@@ -66,7 +67,7 @@ export function useGameTransactions(options?: {
       action: GameTxAction,
       fn: () => Promise<`0x${string}` | undefined>
     ): Promise<{ ok: boolean; hash?: string; error?: string }> => {
-      if (!isConnected || !walletAddress) return { ok: false };
+      if (!walletReady || !walletAddress) return { ok: false };
       if (chain?.id !== undefined && chain.id !== appChain.id) return { ok: false };
       setPendingAction(action);
       setLastTxError(null);
@@ -93,7 +94,7 @@ export function useGameTransactions(options?: {
       }
     },
     [
-      isConnected,
+      walletReady,
       walletAddress,
       chain?.id,
       waitReceipt,
@@ -187,7 +188,7 @@ export function useGameTransactions(options?: {
     isPending,
     pendingAction,
     error: error ?? (lastTxError ? new Error(lastTxError) : null),
-    isConnected,
+    isConnected: walletReady,
     isOnChain: isOnChainEnabled,
     walletAddress,
   };

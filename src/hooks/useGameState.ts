@@ -205,6 +205,7 @@ export function useGameState() {
 
   useEffect(() => {
     if (state.phase !== "PLAYING" || !state.hasAttempt) return;
+    spawnWarplet();
     const interval = setInterval(spawnWarplet, SPAWN_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [state.phase, state.hasAttempt, spawnWarplet]);
@@ -290,6 +291,14 @@ export function useGameState() {
           w.animState === "active"
       );
 
+      if (!warplet) {
+        setState((s) => ({
+          ...s,
+          lastResult: "No Warplet here — wait for one to pop up!",
+        }));
+        return "noop";
+      }
+
       setIsWhackResolving(true);
       setState((s) => ({
         ...s,
@@ -302,20 +311,6 @@ export function useGameState() {
       const hideT = spawnTimers.current.get(hideKey);
       if (hideT) clearTimeout(hideT);
       spawnTimers.current.delete(hideKey);
-
-      if (!warplet) {
-        localSessionRef.current = false;
-        setIsWhackResolving(false);
-        setState((s) => ({
-          ...s,
-          phase: "GAME_OVER",
-          level: 0,
-          roundPoints: 0,
-          activeWarplets: [],
-          lastResult: "Miss! Run over — start again",
-        }));
-        return "miss";
-      }
 
       const chance = getLevelChance(state.level);
       const success = Math.random() * 100 < chance;
@@ -498,13 +493,20 @@ export function useGameState() {
     tx.isPending &&
     (tx.pendingAction === "cashOut" || tx.pendingAction === "nextLevel");
 
-  const canTransact = chain.isConnected && !chain.isWrongChain;
+  const canTransact =
+    chain.isConnected && !chain.isWrongChain && tx.isConnected;
+  const txBlocksWhack =
+    tx.isPending &&
+    (tx.pendingAction === "cashOut" ||
+      tx.pendingAction === "nextLevel" ||
+      tx.pendingAction === "startGame" ||
+      tx.pendingAction === "dailyCheckIn");
   const canPlayBoard =
     canTransact &&
     phase === "PLAYING" &&
     hasAttempt &&
     !isWhackResolving &&
-    !tx.isPending;
+    !txBlocksWhack;
   const showStartButton = phase === "WAITING_FOR_TX" || phase === "GAME_OVER";
   const showChoice = phase === "CHOOSING_REWARD";
 
@@ -534,7 +536,7 @@ export function useGameState() {
         return "Tap Start game on Base Mainnet";
       case "PLAYING":
         return hasAttempt
-          ? `One shot · Level ${level} · ${chance}% · ${roundPoints.toFixed(0)} $BOOM banked`
+          ? `Tap the glowing Warplet · Lv ${level} · ${chance}% · ${roundPoints.toFixed(0)} $BOOM`
           : "Resolving…";
       case "CHOOSING_REWARD":
         return isChoiceTxPending

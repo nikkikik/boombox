@@ -149,7 +149,7 @@ export function ActionButtons({
   return (
     <div className="mt-3 space-y-2">
       <p className="rounded-xl border border-white/10 bg-black/25 py-3 text-center text-xs text-slate-400">
-        One hammer strike this level — hit a Warplet!
+        Wait for a glowing Warplet, then tap it — one strike this level
       </p>
     </div>
   );

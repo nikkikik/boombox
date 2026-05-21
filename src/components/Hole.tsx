@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Warplet } from "./Warplet";
 import { HammerStrike } from "./HammerStrike";
 import { MissFeedback } from "./MissFeedback";
 import { HoleCosmicBg } from "./HoleCosmicBg";
-import { HAMMER_CURSOR, HAMMER_CURSOR_DISABLED } from "@/lib/hammerCursor";
 import type { ActiveWarplet } from "@/hooks/useGameState";
 
 interface HoleProps {
@@ -26,11 +25,16 @@ export function Hole({
 }: HoleProps) {
   const [strike, setStrike] = useState(0);
   const [missCount, setMissCount] = useState(0);
+  const lastTapAt = useRef(0);
 
   const hasTarget = warplet?.visible && warplet.animState === "active";
 
-  const handleClick = async () => {
+  const runWhack = async () => {
     if (disabled || isResolving) return;
+    const now = Date.now();
+    if (now - lastTapAt.current < 280) return;
+    lastTapAt.current = now;
+
     const result = await onWhack(index);
     if (result === "hit") {
       setStrike((s) => s + 1);
@@ -44,16 +48,27 @@ export function Hole({
     <motion.button
       type="button"
       disabled={disabled || isResolving}
-      onClick={() => void handleClick()}
-      className={`game-hole group relative aspect-square w-full overflow-visible rounded-full border-[3px] border-[#3d3560] bg-[#0a0814] shadow-[0_0_12px_rgba(100,80,200,0.15),inset_0_4px_12px_rgba(0,0,0,0.8)] disabled:cursor-not-allowed ${
-        hasTarget ? "has-warplet-target" : ""
+      onPointerDown={(e) => {
+        if (disabled || isResolving) return;
+        e.preventDefault();
+        void runWhack();
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+      }}
+      className={`game-hole group relative aspect-square w-full touch-manipulation overflow-visible rounded-full border-[3px] border-[#3d3560] bg-[#0a0814] shadow-[0_0_12px_rgba(100,80,200,0.15),inset_0_4px_12px_rgba(0,0,0,0.8)] disabled:cursor-not-allowed ${
+        hasTarget ? "has-warplet-target ring-2 ring-amber-400/70 ring-offset-1 ring-offset-[#0a0814]" : ""
       } ${isResolving ? "opacity-80" : ""}`}
-      style={{ cursor: disabled || isResolving ? HAMMER_CURSOR_DISABLED : HAMMER_CURSOR }}
       whileTap={disabled || isResolving ? {} : { scale: 0.94 }}
+      aria-label={
+        hasTarget
+          ? `Whack Warplet in hole ${index + 1}`
+          : `Hole ${index + 1}, wait for Warplet`
+      }
     >
       <motion.div
         key={`shake-${missCount}`}
-        className="absolute inset-0 overflow-visible rounded-full"
+        className="pointer-events-none absolute inset-0 overflow-visible rounded-full"
         initial={{ x: 0, rotate: 0 }}
         animate={
           missCount > 0
@@ -76,8 +91,13 @@ export function Hole({
         )}
         <MissFeedback trigger={missCount} holeIndex={index} />
         <HammerStrike trigger={strike} />
+        {hasTarget && (
+          <span className="pointer-events-none absolute -top-1 left-1/2 z-30 -translate-x-1/2 rounded-full bg-amber-400/90 px-1.5 py-0.5 text-[7px] font-black uppercase text-black">
+            Hit!
+          </span>
+        )}
         {isResolving && (
-          <div className="absolute inset-0 z-[60] flex items-center justify-center rounded-full bg-black/40">
+          <div className="pointer-events-none absolute inset-0 z-[60] flex items-center justify-center rounded-full bg-black/40">
             <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-amber-300" />
           </div>
         )}
