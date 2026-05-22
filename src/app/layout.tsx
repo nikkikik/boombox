@@ -43,6 +43,10 @@ export default function RootLayout({
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <head>
         <meta name="base:app_id" content="6a0f7b0e86fe5ef216020998" />
+        <meta
+          name="talentapp:project_verification"
+          content="0c1c15083ab0cca307634f33fa11730180b970204270461af35054ad2ef4d72d38cfa1dfd8a233beaeec6d8da366b23acae5f4b7c79e88dba7e33c3bbfe462aa"
+        />
       </head>
       <body className="font-body antialiased">
         <Providers>{children}</Providers>
