@@ -1,4 +1,4 @@
-# Boombox Warplet
+# Boombox Warplet1
 
 Cosmic Whack-a-Mole mini-app for **Base Mainnet** and **Farcaster**. Hit Warplets, stack multipliers, cash out or risk the next round.
 
