@@ -34,6 +34,11 @@ function buildMiniAppConfig() {
     ogTitle: "Boombox",
     ogDescription: "Cosmic Whack a Mole mini game on Base Mainnet.",
     ogImageUrl: `${APP_URL}/image.png`,
+    screenshotUrls: [
+      `${APP_URL}/screenshot-1.png`,
+      `${APP_URL}/screenshot-2.png`,
+      `${APP_URL}/screenshot-3.png`,
+    ],
     requiredChains: ["eip155:8453"],
     requiredCapabilities: ["wallet.getEthereumProvider"],
   };
