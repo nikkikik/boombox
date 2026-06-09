@@ -7,7 +7,10 @@ import {
   WarpletConfig,
   getLevelChance,
   getStageName,
+  MAX_ACTIVE_WARPLETS,
   pickWarpletType,
+  SPAWN_INTERVAL_MS,
+  WARPLET_VISIBLE_MS,
 } from "@/lib/gameConfig";
 import {
   CHAIN_STATUS,
@@ -29,13 +32,14 @@ export type GamePhase =
   | "CHOOSING_REWARD"
   | "GAME_OVER";
 
-export type WarpletAnimState = "active" | "vibrate" | "explode" | "gone";
+export type WarpletAnimState = "active" | "vibrate" | "retreat" | "explode" | "gone";
 
 export interface ActiveWarplet {
   holeIndex: number;
   config: WarpletConfig;
   visible: boolean;
   animState: WarpletAnimState;
+  spawnId: number;
 }
 
 export interface GameState {
@@ -49,9 +53,16 @@ export interface GameState {
   soundOn: boolean;
 }
 
-const SPAWN_INTERVAL_MS = 900;
-const WARPLET_VISIBLE_MS = 2200;
 const EXPLODE_MS = 650;
+
+function countOnBoard(warplets: ActiveWarplet[]): number {
+  return warplets.filter(
+    (w) =>
+      w.visible &&
+      w.animState !== "gone" &&
+      w.animState !== "explode"
+  ).length;
+}
 
 function randomHoleIndex(exclude: number[]): number {
   const available = Array.from({ length: TOTAL_HOLES }, (_, i) => i).filter(
@@ -185,22 +196,43 @@ export function useGameState() {
       }
       const occupied = s.activeWarplets.filter((w) => w.visible).map((w) => w.holeIndex);
       if (occupied.length >= TOTAL_HOLES) return s;
+      if (countOnBoard(s.activeWarplets) >= MAX_ACTIVE_WARPLETS) return s;
       const holeIndex = randomHoleIndex(occupied);
       const config = pickWarpletType();
       scheduleTimer(`hide-${holeIndex}`, () => {
         setState((prev) => ({
           ...prev,
-          activeWarplets: prev.activeWarplets.filter(
-            (w) => !(w.holeIndex === holeIndex && w.animState === "active")
+          activeWarplets: prev.activeWarplets.map((w) =>
+            w.holeIndex === holeIndex && w.animState === "active"
+              ? { ...w, animState: "retreat" as WarpletAnimState }
+              : w
           ),
         }));
+        scheduleTimer(`remove-${holeIndex}`, () => {
+          setState((prev) => ({
+            ...prev,
+            activeWarplets: prev.activeWarplets.filter(
+              (w) =>
+                !(
+                  w.holeIndex === holeIndex &&
+                  (w.animState === "retreat" || w.animState === "active")
+                )
+            ),
+          }));
+        }, 420);
       }, WARPLET_VISIBLE_MS);
       const filtered = s.activeWarplets.filter((w) => w.holeIndex !== holeIndex);
       return {
         ...s,
         activeWarplets: [
           ...filtered,
-          { holeIndex, config, visible: true, animState: "active" },
+          {
+            holeIndex,
+            config,
+            visible: true,
+            animState: "active",
+            spawnId: Date.now(),
+          },
         ],
       };
     });

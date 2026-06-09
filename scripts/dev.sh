@@ -21,4 +21,4 @@ fi
 
 echo "→ Starting dev server at http://localhost:3000"
 echo "   (Keep this terminal open. If the page breaks, run: npm run restart)"
-exec "$ROOT/node_modules/.bin/next" dev --turbopack
+exec "$ROOT/node_modules/.bin/next" dev

@@ -45,35 +45,113 @@ body {
     -webkit-backdrop-filter: blur(16px);
   }
 
-  /** Единый габарит кнопок в хедере (эталон — BOOMBOX) */
-  .header-btn-size {
-    @apply flex h-12 w-[7.5rem] shrink-0 items-center justify-center overflow-hidden rounded-full px-2 text-center text-xs font-bold leading-tight transition-all active:scale-95 sm:w-36 sm:text-sm;
+  /** Unified minimal button */
+  .btn-app {
+    @apply inline-flex min-h-10 w-full items-center justify-center rounded-full px-2 text-center text-[10px] font-medium uppercase tracking-[0.06em] text-slate-200 transition-colors active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-11 sm:text-[11px];
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.06);
   }
 
-  .btn-boombox {
-    @apply rounded-full font-bold uppercase tracking-wide transition-all active:scale-95;
-    background: linear-gradient(180deg, #e8954f 0%, var(--boombox-brown) 100%);
+  .btn-app:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.22);
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-app-muted {
+    @apply text-slate-400;
+  }
+
+  /** Whack-a-mole pit: clips sprite below rim */
+  .game-hole {
+    --hole-rim-y: 68%;
+    --warplet-size: 62%;
+  }
+
+  .hole-pit {
+    background: #08060e;
+    box-shadow: inset 0 10px 28px rgba(0, 0, 0, 0.95);
+  }
+
+  /** Front lip — sprite appears to emerge from behind this ring */
+  .hole-rim {
+    background: radial-gradient(
+      circle at 50% var(--hole-rim-y),
+      transparent 0%,
+      transparent 34%,
+      rgba(10, 8, 16, 0.25) 40%,
+      rgba(10, 8, 16, 0.75) 46%,
+      rgba(18, 12, 28, 0.95) 50%,
+      rgba(10, 8, 16, 0.55) 54%,
+      transparent 58%
+    );
     box-shadow:
-      0 4px 0 #5c3a1a,
-      0 0 20px rgba(196, 122, 58, 0.35);
-    border: 1px solid rgba(255, 220, 160, 0.35);
+      inset 0 0 0 2px rgba(196, 130, 255, 0.35),
+      inset 0 10px 22px rgba(0, 0, 0, 0.75),
+      inset 0 -6px 14px rgba(168, 85, 247, 0.2);
   }
 
-  .btn-play {
-    @apply rounded-2xl font-bold uppercase tracking-wide;
-    background: linear-gradient(180deg, var(--play-gold-from) 0%, var(--play-gold-to) 100%);
-    color: #3d2918;
-    box-shadow:
-      0 4px 0 #8b6914,
-      0 0 24px rgba(212, 160, 58, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+  .warplet-slot {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 50%;
   }
 
-  .btn-cashout {
-    @apply rounded-2xl font-bold uppercase tracking-wide text-white;
-    background: linear-gradient(180deg, #a67c52 0%, var(--cashout-brown) 100%);
-    box-shadow: 0 4px 0 #4a3020;
-    border: 1px solid rgba(255, 200, 150, 0.2);
+  .warplet-slot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    border-radius: 50%;
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.15) 28%,
+      transparent 48%
+    );
+  }
+
+  .game-hole.has-warplet-target .hole-rim {
+    animation: hole-rim-pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes hole-rim-pulse {
+    0%,
+    100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.12);
+    }
+  }
+
+  .warplet-sprite {
+    image-rendering: auto;
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /**
+   * Bottom of anchor = rim line (same in every hole).
+   * Framer animates only the inner layer — never this translateX.
+   */
+  .warplet-emerge-anchor {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - var(--hole-rim-y));
+    z-index: 1;
+    width: var(--warplet-size);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .warplet-emerge-motion {
+    transform-origin: 50% 100%;
+    will-change: transform;
   }
 
   /* Молоток на лунках */

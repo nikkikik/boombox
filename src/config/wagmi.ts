@@ -2,6 +2,7 @@ import { http, createConfig, createStorage } from "wagmi";
 import { base } from "wagmi/chains";
 import { baseAccount, injected } from "wagmi/connectors";
 import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector";
+import { BUILDER_DATA_SUFFIX } from "@/lib/builderCode";
 
 /** Production chain: Base Mainnet only */
 export const appChain = base;
@@ -42,6 +43,8 @@ export const config = createConfig({
   ],
   storage: wagmiStorage,
   ssr: true,
+  /** Base Builder Code attribution on supported wallet flows */
+  dataSuffix: BUILDER_DATA_SUFFIX,
   transports: {
     [base.id]: http(
       process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL ?? "https://mainnet.base.org"

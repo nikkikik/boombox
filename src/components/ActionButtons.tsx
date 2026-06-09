@@ -77,18 +77,20 @@ export function ActionButtons({
             }
             onStartGame();
           }}
-          className="btn-play min-h-[56px] w-full px-4 py-3 text-sm font-black uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-45"
-          whileTap={!txBlocked && !isTxPending ? { scale: 0.97 } : {}}
+          className="btn-app min-h-12 flex-col gap-0.5 py-2 normal-case tracking-normal"
+          whileTap={!txBlocked && !isTxPending ? { scale: 0.98 } : {}}
         >
-          {isTxPending
-            ? (txLabel ?? "Confirm in wallet…")
-            : isWrongChain
-              ? "Wrong network"
-              : !isConnected
-                ? "Connect wallet to start"
-                : "Start game"}
-          {!isTxPending && isConnected && (
-            <span className="mt-1 block text-[10px] font-semibold normal-case opacity-80">
+          <span>
+            {isTxPending
+              ? (txLabel ?? "Confirm in wallet…")
+              : isWrongChain
+                ? "Wrong network"
+                : !isConnected
+                  ? "Connect wallet"
+                  : "Start game"}
+          </span>
+          {!isTxPending && isConnected && !isWrongChain && (
+            <span className="text-[9px] font-normal normal-case text-slate-400">
               startGame on Base
             </span>
           )}
@@ -110,18 +112,17 @@ export function ActionButtons({
             {switchNetworkMessage ?? "Switch to Base Mainnet to play"}
           </p>
         )}
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <motion.button
             type="button"
             disabled={isTxPending || txBlocked}
             onClick={onNextLevel}
-            className="btn-play min-h-[52px] flex-[1.6] px-2 py-3 text-[10px] leading-tight disabled:cursor-not-allowed disabled:opacity-40 sm:text-xs"
-            whileTap={!isTxPending ? { scale: 0.97 } : {}}
+            className="btn-app min-h-12 flex-col gap-0.5 py-2 normal-case tracking-normal"
+            whileTap={!isTxPending ? { scale: 0.98 } : {}}
           >
-            {isTxPending ? (txLabel ?? "Next level…") : "Next level"}
-            <br />
-            <span className="font-semibold opacity-80">
-              Lv {level + 1} • {getLevelChance(level + 1)}% chance
+            <span>{isTxPending ? (txLabel ?? "Next level…") : "Next level"}</span>
+            <span className="text-[9px] font-normal text-slate-400">
+              Lv {level + 1} · {getLevelChance(level + 1)}%
             </span>
           </motion.button>
 
@@ -129,12 +130,11 @@ export function ActionButtons({
             type="button"
             disabled={isTxPending || txBlocked || cashOutPreview <= 0}
             onClick={onCashOut}
-            className="btn-cashout min-h-[52px] flex-1 px-2 py-3 text-[10px] leading-tight disabled:cursor-not-allowed disabled:opacity-40 sm:text-xs"
-            whileTap={cashOutPreview > 0 && !isTxPending ? { scale: 0.97 } : {}}
+            className="btn-app min-h-12 flex-col gap-0.5 py-2 normal-case tracking-normal"
+            whileTap={cashOutPreview > 0 && !isTxPending ? { scale: 0.98 } : {}}
           >
-            {isTxPending ? (txLabel ?? "Claiming…") : "Cash out"}
-            <br />
-            <span className="font-semibold opacity-80">
+            <span>{isTxPending ? (txLabel ?? "Claiming…") : "Cash out"}</span>
+            <span className="text-[9px] font-normal text-slate-400">
               {cashOutPreview.toFixed(0)} $BOOM
             </span>
           </motion.button>

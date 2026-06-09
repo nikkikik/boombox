@@ -137,12 +137,12 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
                           /* error shown below */
                         }
                       }}
-                      className="w-full rounded-xl border border-blue-400/30 bg-[#1a2a5e]/80 px-4 py-3 text-left transition hover:border-blue-300/60 hover:bg-[#243a6e] disabled:opacity-50"
+                      className="btn-app h-auto min-h-12 flex-col items-start gap-0.5 rounded-2xl px-4 py-3 normal-case tracking-normal"
                     >
-                      <span className="block truncate text-sm font-bold text-blue-100">
+                      <span className="block truncate text-xs font-medium text-slate-100">
                         {getWalletOptionLabel(connector)}
                       </span>
-                      <span className="mt-0.5 block text-[10px] leading-snug text-slate-400">
+                      <span className="block text-[10px] leading-snug text-slate-400">
                         {getWalletOptionDescription(connector)}
                       </span>
                     </button>
@@ -161,7 +161,7 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full rounded-xl border border-white/20 py-2.5 text-xs font-semibold text-slate-300"
+                className="btn-app normal-case tracking-normal"
               >
                 Cancel
               </button>

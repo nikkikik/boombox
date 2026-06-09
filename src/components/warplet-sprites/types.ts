@@ -1,20 +1,14 @@
-export type WarpletVariant =
-  | "gnasher-grey"
-  | "gnasher-purple"
-  | "gnasher-brown"
-  | "hood-shadow"
-  | "sleepy-shirt"
-  | "sleepy-office"
-  | "overalls-blue"
-  | "grin-gold";
+export type WarpletVariant = "grey" | "purple" | "gold";
 
+/** Dedicated PNG per color — CSS filters don't tint grey sprites reliably */
 export const WARPLET_IMAGE_PATHS: Record<WarpletVariant, string> = {
-  "gnasher-grey": "/warplets/gnasher-grey.png",
-  "gnasher-purple": "/warplets/gnasher-purple.png",
-  "gnasher-brown": "/warplets/gnasher-brown.png",
-  "hood-shadow": "/warplets/hood-shadow.png",
-  "sleepy-shirt": "/warplets/sleepy-shirt.png",
-  "sleepy-office": "/warplets/sleepy-office.png",
-  "overalls-blue": "/warplets/overalls-blue.png",
-  "grin-gold": "/warplets/grin-gold.png",
+  grey: "/warplets/warplet-grey.png",
+  purple: "/warplets/warplet-purple.png",
+  gold: "/warplets/warplet-gold.png",
+};
+
+export const WARPLET_VARIANT_FILTERS: Record<WarpletVariant, string> = {
+  grey: "none",
+  purple: "none",
+  gold: "none",
 };

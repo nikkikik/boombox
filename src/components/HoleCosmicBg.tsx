@@ -2,116 +2,68 @@
 
 import { motion } from "framer-motion";
 
-/** Уникальный космический вид внутри каждой лунки (планета + звёзды) */
-const HOLE_SKIES = [
-  {
-    nebula: "rgba(88, 40, 160, 0.55)",
-    planet: "radial-gradient(circle at 32% 28%, #9b7fd4 0%, #5a3d8a 35%, #2a1848 65%, transparent 72%)",
-    ring: "rgba(180, 120, 255, 0.25)",
-  },
-  {
-    nebula: "rgba(40, 100, 200, 0.5)",
-    planet: "radial-gradient(circle at 40% 35%, #6ec8e8 0%, #2a6a9e 40%, #0f2840 70%, transparent 75%)",
-    ring: "rgba(100, 200, 255, 0.2)",
-  },
-  {
-    nebula: "rgba(200, 80, 120, 0.45)",
-    planet: "radial-gradient(circle at 35% 30%, #f0a0c0 0%, #c45a80 38%, #4a1830 68%, transparent 74%)",
-    ring: "rgba(255, 150, 200, 0.22)",
-  },
-  {
-    nebula: "rgba(60, 160, 100, 0.4)",
-    planet: "radial-gradient(circle at 38% 32%, #8ed4a8 0%, #3a8a58 42%, #143828 70%, transparent 76%)",
-    ring: "rgba(120, 255, 180, 0.2)",
-  },
-  {
-    nebula: "rgba(220, 140, 60, 0.4)",
-    planet: "radial-gradient(circle at 30% 28%, #f0d080 0%, #c87820 35%, #6a4010 65%, transparent 72%)",
-    ring: "rgba(255, 200, 100, 0.25)",
-  },
-  {
-    nebula: "rgba(80, 60, 180, 0.5)",
-    planet: "radial-gradient(circle at 42% 34%, #a8b8ff 0%, #4858b0 40%, #1a2050 68%, transparent 74%)",
-    ring: "rgba(150, 170, 255, 0.22)",
-  },
-] as const;
-
 const STARS = [
-  { x: "12%", y: "18%", s: 1.5 },
-  { x: "78%", y: "22%", s: 2 },
-  { x: "45%", y: "12%", s: 1 },
-  { x: "88%", y: "55%", s: 1.5 },
-  { x: "22%", y: "72%", s: 2 },
-  { x: "65%", y: "80%", s: 1 },
-  { x: "35%", y: "48%", s: 1 },
-  { x: "92%", y: "38%", s: 1 },
+  { x: "15%", y: "20%", s: 1.2 },
+  { x: "82%", y: "25%", s: 1.5 },
+  { x: "48%", y: "14%", s: 1 },
+  { x: "75%", y: "68%", s: 1.2 },
+  { x: "25%", y: "75%", s: 1.4 },
+  { x: "60%", y: "55%", s: 1 },
 ];
 
 interface HoleCosmicBgProps {
   holeIndex: number;
 }
 
+/** Dark crater interior with purple rim glow — matches app logo */
 export function HoleCosmicBg({ holeIndex }: HoleCosmicBgProps) {
-  const sky = HOLE_SKIES[holeIndex % HOLE_SKIES.length];
+  const hueShift = holeIndex % 3;
 
   return (
     <div
-      className="absolute inset-1.5 z-0 overflow-hidden rounded-full"
+      className="absolute inset-0 z-0 overflow-hidden rounded-full"
       style={{
         background: `
-          radial-gradient(ellipse 90% 80% at 50% 120%, ${sky.nebula} 0%, transparent 55%),
-          radial-gradient(ellipse 70% 60% at 80% 10%, rgba(60, 120, 220, 0.35) 0%, transparent 50%),
-          radial-gradient(ellipse 60% 50% at 10% 90%, rgba(140, 50, 180, 0.3) 0%, transparent 45%),
-          linear-gradient(165deg, #0a0618 0%, #050510 40%, #020208 100%)
+          radial-gradient(circle at 50% 85%, rgba(168, 85, 247, ${0.35 + hueShift * 0.05}) 0%, transparent 45%),
+          radial-gradient(circle at 50% 100%, rgba(60, 30, 90, 0.6) 0%, transparent 55%),
+          radial-gradient(circle at 30% 20%, rgba(40, 60, 120, 0.15) 0%, transparent 40%),
+          linear-gradient(180deg, #12101a 0%, #08060e 45%, #030208 100%)
         `,
-        boxShadow: "inset 0 8px 20px rgba(0,0,0,0.85), inset 0 -2px 8px rgba(80,120,255,0.08)",
+        boxShadow:
+          "inset 0 10px 24px rgba(0,0,0,0.9), inset 0 -4px 16px rgba(168,85,247,0.15)",
       }}
     >
       {STARS.map((star, i) => (
         <motion.span
           key={i}
-          className="absolute rounded-full bg-white"
-          style={{
-            left: star.x,
-            top: star.y,
-            width: star.s,
-            height: star.s,
-          }}
-          animate={{ opacity: [0.2, 0.95, 0.2] }}
+          className="absolute rounded-full bg-white/80"
+          style={{ left: star.x, top: star.y, width: star.s, height: star.s }}
+          animate={{ opacity: [0.15, 0.7, 0.15] }}
           transition={{
-            duration: 1.2 + (i % 3) * 0.4,
+            duration: 1.5 + (i % 3) * 0.3,
             repeat: Infinity,
-            delay: (holeIndex + i) * 0.15,
+            delay: (holeIndex + i) * 0.12,
           }}
         />
       ))}
 
-      {/* Планета в глубине лунки */}
-      <motion.div
-        className="absolute left-1/2 top-[58%] h-[55%] w-[55%] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{
-          background: sky.planet,
-          boxShadow: `0 0 20px ${sky.ring}, inset -4px -8px 12px rgba(0,0,0,0.5)`,
-        }}
-        animate={{ y: [0, -2, 0], scale: [1, 1.02, 1] }}
-        transition={{ duration: 4 + holeIndex * 0.3, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      {/* Кольцо / атмосфера */}
+      {/* Rocky crater lip */}
       <div
-        className="pointer-events-none absolute left-1/2 top-[58%] h-[62%] w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40"
+        className="pointer-events-none absolute inset-0 rounded-full opacity-60"
         style={{
-          border: `1px solid ${sky.ring}`,
-          transform: "translate(-50%, -50%) rotateX(72deg)",
+          background:
+            "radial-gradient(circle at 50% 68%, transparent 42%, rgba(30,25,40,0.8) 58%, rgba(15,12,22,0.95) 72%, transparent 78%)",
         }}
       />
 
-      {/* Туманность */}
+      {/* Purple rim glow */}
       <motion.div
-        className="absolute -right-[20%] -top-[15%] h-[50%] w-[50%] rounded-full opacity-50 blur-md"
-        style={{ background: sky.nebula }}
-        animate={{ opacity: [0.3, 0.55, 0.3] }}
-        transition={{ duration: 3, repeat: Infinity }}
+        className="pointer-events-none absolute inset-0 rounded-full"
+        style={{
+          boxShadow: "inset 0 0 18px rgba(168,85,247,0.35), inset 0 0 6px rgba(196,130,255,0.2)",
+        }}
+        animate={{ opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 2.5 + holeIndex * 0.2, repeat: Infinity }}
       />
     </div>
   );

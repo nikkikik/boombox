@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { WarpletVariant } from "./types";
-import { WARPLET_IMAGE_PATHS } from "./types";
+import { WARPLET_IMAGE_PATHS, WARPLET_VARIANT_FILTERS } from "./types";
 
 interface WarpletSpriteProps {
   variant: WarpletVariant;
@@ -25,7 +25,10 @@ export function WarpletSprite({
       height={120}
       unoptimized
       className={`${className} object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.45)]`}
-      style={{ imageRendering: "auto" }}
+      style={{
+        imageRendering: "auto",
+        filter: WARPLET_VARIANT_FILTERS[variant],
+      }}
     />
   );
 }

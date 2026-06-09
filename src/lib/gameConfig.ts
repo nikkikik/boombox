@@ -4,6 +4,13 @@ export const GRID_ROWS = 2;
 export const GRID_COLS = 3;
 export const TOTAL_HOLES = GRID_ROWS * GRID_COLS;
 
+/** How often a new warplet tries to spawn (ms) */
+export const SPAWN_INTERVAL_MS = 2400;
+/** How long a warplet stays up before sinking back (ms) */
+export const WARPLET_VISIBLE_MS = 1900;
+/** Max warplets on the board at once — keeps the grid from flooding */
+export const MAX_ACTIVE_WARPLETS = 3;
+
 /** Шанс успешного удара: индекс 0 = уровень 1; уровень 8+ → последнее значение (20%) */
 export const LEVEL_CHANCES = [100, 80, 70, 60, 50, 40, 30, 20] as const;
 
@@ -49,59 +56,24 @@ export interface WarpletConfig {
 export const WARPLET_TYPES: WarpletConfig[] = [
   {
     type: "common",
-    variant: "gnasher-grey",
-    label: "Warplet #852086",
+    variant: "grey",
+    label: "Grey Warplet",
     pointBonus: 1,
-    spawnWeight: 20,
-  },
-  {
-    type: "common",
-    variant: "gnasher-purple",
-    label: "Warplet #1432012",
-    pointBonus: 1,
-    spawnWeight: 18,
-  },
-  {
-    type: "common",
-    variant: "gnasher-brown",
-    label: "Warplet #771204",
-    pointBonus: 1.1,
-    spawnWeight: 14,
-  },
-  {
-    type: "common",
-    variant: "sleepy-shirt",
-    label: "Warplet #902441",
-    pointBonus: 1.1,
-    spawnWeight: 12,
+    spawnWeight: 34,
   },
   {
     type: "rare",
-    variant: "sleepy-office",
-    label: "Warplet #225686",
+    variant: "purple",
+    label: "Purple Warplet",
     pointBonus: 2.5,
-    spawnWeight: 14,
-  },
-  {
-    type: "rare",
-    variant: "overalls-blue",
-    label: "Warplet #533336",
-    pointBonus: 2.5,
-    spawnWeight: 12,
-  },
-  {
-    type: "rare",
-    variant: "hood-shadow",
-    label: "Warplet #661890",
-    pointBonus: 2.2,
-    spawnWeight: 10,
+    spawnWeight: 33,
   },
   {
     type: "legendary",
-    variant: "grin-gold",
-    label: "Warplet #1432012 ★",
+    variant: "gold",
+    label: "Gold Warplet",
     pointBonus: 5,
-    spawnWeight: 5,
+    spawnWeight: 33,
   },
 ];
 

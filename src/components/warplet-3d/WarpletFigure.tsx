@@ -13,28 +13,40 @@ interface WarpletFigureProps {
   animState: WarpletAnimState;
 }
 
+const HEAD_SPIKES: [number, number, number, number][] = [
+  [-0.08, 0.48, 0.05, 0.14],
+  [0.08, 0.5, 0.02, 0.16],
+  [0, 0.52, -0.08, 0.15],
+  [-0.22, 0.38, -0.05, 0.11],
+  [0.22, 0.38, -0.05, 0.11],
+  [-0.14, 0.44, -0.18, 0.1],
+  [0.14, 0.44, -0.18, 0.1],
+];
+
 export function WarpletFigure({ variant, visible, animState }: WarpletFigureProps) {
   const group = useRef<THREE.Group>(null);
   const style = VARIANT_STYLES[variant];
-  const isExplode = animState === "explode";
 
   useFrame((_, delta) => {
     const g = group.current;
     if (!g) return;
 
     const isGone = animState === "gone" || !visible;
-
-    let targetY = -1.35;
-    let targetScale = 0.15;
-    let targetRotX = 0.45;
+    let targetY = -1.2;
+    let targetScale = 0.12;
+    let targetRotX = 0.35;
 
     if (!isGone && animState === "active") {
-      targetY = 0.2;
-      targetScale = 1;
-      targetRotX = -0.05;
+      targetY = 0.28;
+      targetScale = 1.05;
+      targetRotX = -0.08;
       g.position.x = THREE.MathUtils.lerp(g.position.x, 0, 10 * delta);
       g.position.z = THREE.MathUtils.lerp(g.position.z, 0, 10 * delta);
       g.rotation.z = THREE.MathUtils.lerp(g.rotation.z, 0, 10 * delta);
+    }
+
+    if (animState === "vibrate") {
+      g.position.x = Math.sin(Date.now() * 0.04) * 0.04;
     }
 
     g.position.y = THREE.MathUtils.lerp(g.position.y, targetY, 9 * delta);
@@ -44,175 +56,115 @@ export function WarpletFigure({ variant, visible, animState }: WarpletFigureProp
   });
 
   if (animState === "gone" && !visible) return null;
-  if (isExplode) return null;
+  if (animState === "explode") return null;
 
   return (
-    <group ref={group} position={[0, -1.35, 0]}>
+    <group ref={group} position={[0, -1.2, 0]}>
       {style.glow && (
-        <pointLight position={[0, 0.3, 0.5]} intensity={0.8} color="#ffd700" distance={2} />
+        <pointLight position={[0, 0.2, 0.4]} intensity={1.2} color="#ffd700" distance={2.5} />
       )}
 
-      <mesh castShadow position={[0, 0, 0]}>
-        <sphereGeometry args={[0.52, 28, 28]} />
+      {/* Body — round pebbled grey like logo */}
+      <mesh castShadow position={[0, 0, 0]} scale={[1, 0.92, 0.95]}>
+        <sphereGeometry args={[0.5, 32, 32]} />
         <meshStandardMaterial
           color={style.body}
-          roughness={0.45}
-          metalness={style.glow ? 0.35 : 0.08}
-          emissive={style.glow ? "#886600" : "#000000"}
-          emissiveIntensity={style.glow ? 0.25 : 0}
+          roughness={0.72}
+          metalness={0.05}
+          emissive={style.glow ? "#886600" : style.accent}
+          emissiveIntensity={style.glow ? 0.35 : 0.08}
         />
       </mesh>
 
-      {style.sweater && (
-        <mesh position={[0, -0.08, 0.38]} scale={[1.05, 0.55, 0.7]}>
-          <sphereGeometry args={[0.48, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-          <meshStandardMaterial color={style.sweater} roughness={0.8} />
+      {/* Head spikes / ridges */}
+      {HEAD_SPIKES.map(([x, y, z, s], i) => (
+        <mesh key={i} position={[x, y, z]} scale={s}>
+          <coneGeometry args={[0.08, 0.18, 6]} />
+          <meshStandardMaterial color={style.accent} roughness={0.8} />
         </mesh>
-      )}
+      ))}
 
-      {style.overalls && (
-        <mesh position={[0, -0.15, 0.42]}>
-          <boxGeometry args={[0.75, 0.55, 0.35]} />
-          <meshStandardMaterial color={style.overalls} roughness={0.6} />
-        </mesh>
-      )}
+      <LogoEye position={[-0.19, 0.18, 0.4]} />
+      <LogoEye position={[0.19, 0.18, 0.4]} />
 
-      {style.shirt && (
-        <mesh position={[0, -0.05, 0.4]} scale={[0.95, 0.5, 0.65]}>
-          <sphereGeometry args={[0.45, 14, 14, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-          <meshStandardMaterial color={style.shirt} roughness={0.7} />
-        </mesh>
-      )}
+      <LogoGrinMouth />
 
-      {style.hood && (
-        <mesh position={[0, 0.35, 0.05]} scale={[1.15, 0.9, 1]}>
-          <sphereGeometry args={[0.42, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.65]} />
-          <meshStandardMaterial color={style.hood} roughness={0.85} side={THREE.DoubleSide} />
-        </mesh>
-      )}
-
-      <Eye position={[-0.2, 0.22, 0.42]} sleepy={style.sleepy} />
-      <Eye position={[0.2, 0.22, 0.42]} sleepy={style.sleepy} />
-
-      {style.grin ? <GrinMouth /> : <SimpleMouth sleepy={style.sleepy} />}
-
-      {style.tie && (
-        <mesh position={[0, -0.05, 0.48]}>
-          <boxGeometry args={[0.08, 0.35, 0.05]} />
-          <meshStandardMaterial color="#111" />
-        </mesh>
-      )}
-
-      {style.cigarette && (
-        <group position={[0.35, 0.05, 0.45]} rotation={[0, 0, -0.4]}>
-          <mesh>
-            <cylinderGeometry args={[0.02, 0.02, 0.25, 8]} />
-            <meshStandardMaterial color="#eee" />
-          </mesh>
-          <mesh position={[0, 0.14, 0]}>
-            <sphereGeometry args={[0.03, 8, 8]} />
-            <meshStandardMaterial color="#ff6622" emissive="#ff4400" emissiveIntensity={0.5} />
-          </mesh>
-        </group>
-      )}
-
-      <mesh position={[-0.55, -0.05, 0.15]} scale={0.22}>
-        <sphereGeometry args={[1, 10, 10]} />
-        <meshStandardMaterial color={style.body} />
+      {/* Paws on hole edge */}
+      <mesh position={[-0.52, -0.12, 0.28]} scale={[0.28, 0.22, 0.2]}>
+        <sphereGeometry args={[1, 12, 12]} />
+        <meshStandardMaterial color={style.body} roughness={0.75} />
       </mesh>
-      <mesh position={[0.55, -0.05, 0.15]} scale={0.22}>
-        <sphereGeometry args={[1, 10, 10]} />
-        <meshStandardMaterial color={style.body} />
+      <mesh position={[0.52, -0.12, 0.28]} scale={[0.28, 0.22, 0.2]}>
+        <sphereGeometry args={[1, 12, 12]} />
+        <meshStandardMaterial color={style.body} roughness={0.75} />
       </mesh>
-      <mesh position={[-0.2, -0.52, 0.2]} scale={[0.2, 0.14, 0.18]}>
+      <mesh position={[-0.18, -0.48, 0.22]} scale={[0.22, 0.16, 0.18]}>
         <sphereGeometry args={[1, 10, 10]} />
-        <meshStandardMaterial color={style.body} />
+        <meshStandardMaterial color={style.accent} roughness={0.75} />
       </mesh>
-      <mesh position={[0.2, -0.52, 0.2]} scale={[0.2, 0.14, 0.18]}>
+      <mesh position={[0.18, -0.48, 0.22]} scale={[0.22, 0.16, 0.18]}>
         <sphereGeometry args={[1, 10, 10]} />
-        <meshStandardMaterial color={style.body} />
+        <meshStandardMaterial color={style.accent} roughness={0.75} />
       </mesh>
     </group>
   );
 }
 
-function Eye({
-  position,
-  sleepy,
-}: {
-  position: [number, number, number];
-  sleepy: boolean;
-}) {
-  if (sleepy) {
-    return (
-      <group position={position}>
-        <mesh rotation={[0, 0, 0.15]}>
-          <torusGeometry args={[0.1, 0.025, 8, 16, Math.PI]} />
-          <meshStandardMaterial color="#1a1a1a" />
-        </mesh>
-      </group>
-    );
-  }
-
+function LogoEye({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       <mesh>
-        <sphereGeometry args={[0.14, 16, 16]} />
-        <meshStandardMaterial color="white" />
+        <sphereGeometry args={[0.16, 16, 16]} />
+        <meshStandardMaterial color="#111111" roughness={0.2} />
       </mesh>
-      <mesh position={[0, 0, 0.08]}>
-        <sphereGeometry args={[0.05, 10, 10]} />
-        <meshStandardMaterial color="#111" />
+      <mesh position={[0.04, 0.04, 0.1]}>
+        <sphereGeometry args={[0.045, 10, 10]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.4} />
       </mesh>
     </group>
   );
 }
 
-/** Рот как на PNG: верхний ряд зубов по всей дуге, нижние — по центру */
-function GrinMouth() {
-  const upperCount = 12;
-  const lowerCount = 7;
-  const mouthZ = 0.43;
+function LogoGrinMouth() {
+  const upperCount = 10;
+  const lowerCount = 6;
+  const mouthZ = 0.41;
 
   const upperTeeth = Array.from({ length: upperCount }, (_, i) => {
     const t = i / (upperCount - 1);
-    const angle = Math.PI * 0.12 + t * Math.PI * 0.76;
+    const angle = Math.PI * 0.15 + t * Math.PI * 0.7;
     return {
-      x: Math.cos(angle) * 0.24,
-      y: Math.sin(angle) * 0.07 + 0.06,
+      x: Math.cos(angle) * 0.22,
+      y: Math.sin(angle) * 0.06 + 0.05,
       rotZ: angle - Math.PI / 2,
     };
   });
 
   const lowerTeeth = Array.from({ length: lowerCount }, (_, i) => {
     const t = i / (lowerCount - 1);
-    const angle = Math.PI * 0.38 + t * Math.PI * 0.24;
+    const angle = Math.PI * 0.4 + t * Math.PI * 0.2;
     return {
-      x: Math.cos(angle) * 0.14,
-      y: -Math.sin(angle) * 0.05 - 0.1,
+      x: Math.cos(angle) * 0.12,
+      y: -Math.sin(angle) * 0.04 - 0.09,
       rotZ: angle + Math.PI / 2,
     };
   });
 
   return (
-    <group position={[0, -0.12, mouthZ]}>
-      <mesh position={[0, -0.02, -0.01]} scale={[1.05, 0.55, 0.2]}>
-        <sphereGeometry args={[0.28, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-        <meshStandardMaterial color="#2a0810" roughness={0.9} />
-      </mesh>
-      <mesh position={[0, -0.1, 0.02]} scale={[0.85, 0.35, 0.15]}>
-        <sphereGeometry args={[0.2, 12, 12]} />
-        <meshStandardMaterial color="#d45a7a" roughness={0.6} />
+    <group position={[0, -0.1, mouthZ]}>
+      <mesh position={[0, -0.02, -0.01]} scale={[1.05, 0.5, 0.18]}>
+        <sphereGeometry args={[0.26, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+        <meshStandardMaterial color="#1a0810" roughness={0.9} />
       </mesh>
       {upperTeeth.map((t, i) => (
         <mesh
           key={`u-${i}`}
           position={[t.x, t.y, 0.03]}
           rotation={[0, 0, t.rotZ + Math.PI / 2]}
-          scale={[0.05, 0.09, 0.025]}
+          scale={[0.048, 0.085, 0.022]}
         >
           <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color="#f5f5f5" roughness={0.3} />
+          <meshStandardMaterial color="#f5f5f5" roughness={0.25} />
         </mesh>
       ))}
       {lowerTeeth.map((t, i) => (
@@ -220,21 +172,12 @@ function GrinMouth() {
           key={`l-${i}`}
           position={[t.x, t.y, 0.03]}
           rotation={[0, 0, t.rotZ - Math.PI / 2]}
-          scale={[0.045, 0.08, 0.025]}
+          scale={[0.042, 0.075, 0.022]}
         >
           <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color="#f0f0f0" roughness={0.3} />
+          <meshStandardMaterial color="#f0f0f0" roughness={0.25} />
         </mesh>
       ))}
     </group>
-  );
-}
-
-function SimpleMouth({ sleepy }: { sleepy: boolean }) {
-  return (
-    <mesh position={[0, sleepy ? -0.08 : -0.12, 0.42]} rotation={[sleepy ? 0.1 : 0, 0, 0]}>
-      <boxGeometry args={[0.18, 0.03, 0.04]} />
-      <meshStandardMaterial color="#1a1a1a" />
-    </mesh>
   );
 }

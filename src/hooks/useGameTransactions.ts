@@ -15,6 +15,10 @@ import {
 } from "@/config/gameContract";
 import { appChain } from "@/config/wagmi";
 import { CHAIN_STATUS } from "@/lib/onchainGame";
+import {
+  BUILDER_DATA_SUFFIX,
+  BUILDER_DATA_SUFFIX_CAPABILITY,
+} from "@/lib/builderCode";
 
 export type GameTxAction =
   | "startGame"
@@ -120,6 +124,7 @@ export function useGameTransactions(options?: {
       abi: boomboxGameAbi,
       account: walletAddress,
       chainId: appChain.id,
+      dataSuffix: BUILDER_DATA_SUFFIX,
     }),
     [walletAddress]
   );
@@ -236,6 +241,9 @@ export function useGameTransactions(options?: {
                   from: `0x${string}`;
                   chainId: `0x${string}`;
                   calls: { to: `0x${string}`; data: `0x${string}` }[];
+                  capabilities?: {
+                    dataSuffix?: typeof BUILDER_DATA_SUFFIX_CAPABILITY;
+                  };
                 },
               ];
             }) => Promise<{ id?: string }>;
@@ -251,6 +259,9 @@ export function useGameTransactions(options?: {
                 { to: GAME_CONTRACT_ADDRESS, data: resetData },
                 { to: GAME_CONTRACT_ADDRESS, data: startData },
               ],
+              capabilities: {
+                dataSuffix: BUILDER_DATA_SUFFIX_CAPABILITY,
+              },
             },
           ],
         })) as { id?: string };

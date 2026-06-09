@@ -23,7 +23,7 @@ export function StatsBar({
         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
           Stage
         </p>
-        <p className="mt-0.5 text-sm font-black text-amber-200">
+        <p className="mt-0.5 text-sm font-semibold text-slate-100">
           {level > 0 ? level : "—"}
         </p>
       </div>
@@ -31,7 +31,7 @@ export function StatsBar({
         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
           Hit chance
         </p>
-        <p className="mt-0.5 text-sm font-black text-cyan-300">
+        <p className="mt-0.5 text-sm font-semibold text-slate-100">
           {level > 0 ? `${hitChance}%` : "—"}
         </p>
       </div>
@@ -40,7 +40,7 @@ export function StatsBar({
           $BOOM balance
         </p>
         <p
-          className="mt-0.5 text-sm font-black text-emerald-300"
+          className="mt-0.5 text-sm font-semibold text-slate-100"
           title={
             isWrongChain
               ? `Switch wallet to ${appChainName ?? "Base Mainnet"}`
@@ -54,7 +54,7 @@ export function StatsBar({
               })}
         </p>
         {isWrongChain && (
-          <p className="text-[9px] text-amber-300/90">Switch to {appChainName}</p>
+          <p className="text-[9px] text-slate-400">Switch to {appChainName}</p>
         )}
       </div>
     </div>
