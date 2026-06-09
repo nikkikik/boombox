@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { useDailyCheckIn } from "@/hooks/useDailyCheckIn";
 import { WalletButton } from "./WalletButton";
@@ -34,9 +35,17 @@ export function Header({ daily }: HeaderProps) {
         animate={{ y: 0, opacity: 1 }}
       >
         <div className="grid grid-cols-3 gap-2">
-          <button type="button" className="btn-app btn-app-muted" aria-hidden>
-            Boombox
-          </button>
+          <div className="btn-app btn-app-muted flex items-center justify-center gap-1.5 px-2">
+            <Image
+              src="/miniapp-icon.png"
+              alt="Boombox"
+              width={18}
+              height={18}
+              unoptimized
+              className="rounded-md"
+            />
+            <span className="truncate">Boombox</span>
+          </div>
 
           {!daily.hideButton ? (
             <motion.button

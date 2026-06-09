@@ -77,10 +77,10 @@ export function ActionButtons({
             }
             onStartGame();
           }}
-          className="btn-app min-h-12 flex-col gap-0.5 py-2 normal-case tracking-normal"
-          whileTap={!txBlocked && !isTxPending ? { scale: 0.98 } : {}}
+          className="btn-app btn-app-primary flex-col gap-0.5 py-2.5"
+          whileTap={!txBlocked && !isTxPending ? { scale: 0.97 } : {}}
         >
-          <span>
+          <span className="font-display">
             {isTxPending
               ? (txLabel ?? "Confirm in wallet…")
               : isWrongChain
@@ -90,8 +90,8 @@ export function ActionButtons({
                   : "Start game"}
           </span>
           {!isTxPending && isConnected && !isWrongChain && (
-            <span className="text-[9px] font-normal normal-case text-slate-400">
-              startGame on Base
+            <span className="text-[10px] font-medium normal-case text-[#3d2a0a]/75">
+              Pay & play on Base
             </span>
           )}
         </motion.button>

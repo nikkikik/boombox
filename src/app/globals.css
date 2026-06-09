@@ -61,6 +61,58 @@ body {
     @apply text-slate-400;
   }
 
+  /** Primary CTA — Start game */
+  .btn-app-primary {
+    @apply min-h-14 text-sm font-bold normal-case tracking-wide sm:min-h-[3.25rem] sm:text-base;
+    border: 2px solid rgba(255, 220, 130, 0.6);
+    background: linear-gradient(
+      180deg,
+      var(--play-gold-from) 0%,
+      var(--play-gold-to) 52%,
+      #b8862a 100%
+    );
+    color: #1a1208;
+    box-shadow:
+      0 0 22px rgba(212, 160, 58, 0.45),
+      0 6px 18px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .btn-app-primary:hover:not(:disabled) {
+    border-color: rgba(255, 235, 160, 0.85);
+    background: linear-gradient(
+      180deg,
+      #fff8e8 0%,
+      #e8b84a 52%,
+      #c9922e 100%
+    );
+    box-shadow:
+      0 0 30px rgba(255, 200, 80, 0.55),
+      0 8px 22px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  .btn-app-primary:not(:disabled) {
+    animation: start-btn-pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes start-btn-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 18px rgba(212, 160, 58, 0.4),
+        0 6px 18px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+    50% {
+      box-shadow:
+        0 0 32px rgba(255, 200, 80, 0.65),
+        0 8px 22px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+  }
+
   /** Whack-a-mole pit: clips sprite below rim */
   .game-hole {
     --hole-rim-y: 68%;

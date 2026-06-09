@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface StatsBarProps {
   level: number;
   hitChance: number;
@@ -36,8 +38,16 @@ export function StatsBar({
         </p>
       </div>
       <div className="px-1 py-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-          $BOOM balance
+        <p className="flex items-center justify-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <Image
+            src="/boom-token.png"
+            alt=""
+            width={14}
+            height={14}
+            unoptimized
+            className="rounded-sm"
+          />
+          $BOOM
         </p>
         <p
           className="mt-0.5 text-sm font-semibold text-slate-100"
