@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { promptAddMiniAppIfNeeded } from "@/lib/farcasterAddApp";
 
-/** Call sdk.actions.ready() inside Farcaster / Warpcast mini app shell */
+/** Farcaster shell: hide splash + native “Add to apps” prompt */
 export function useFarcasterMiniApp() {
   useEffect(() => {
     let cancelled = false;
@@ -10,9 +11,13 @@ export function useFarcasterMiniApp() {
     async function init() {
       try {
         const { sdk } = await import("@farcaster/miniapp-sdk");
-        if (!cancelled) {
-          await sdk.actions.ready();
-        }
+        const inMiniApp = await sdk.isInMiniApp();
+        if (!inMiniApp || cancelled) return;
+
+        await sdk.actions.ready();
+        if (cancelled) return;
+
+        await promptAddMiniAppIfNeeded(sdk);
       } catch {
         try {
           const { sdk } = await import("@farcaster/frame-sdk");

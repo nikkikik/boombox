@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { useAccount } from "wagmi";
 import { useFarcasterMiniApp } from "@/hooks/useFarcasterMiniApp";
+import { useAutoConnectWallet } from "@/hooks/useAutoConnectWallet";
 import { useGameState } from "@/hooks/useGameState";
 import { buildFarcasterShareText, getFarcasterShareUrl } from "@/lib/farcaster";
 import { CosmicBackground } from "./CosmicBackground";
@@ -12,6 +13,7 @@ import { BottomPanel } from "./BottomPanel";
 
 export function GameScreen() {
   useFarcasterMiniApp();
+  useAutoConnectWallet();
   const game = useGameState();
   const { isConnected } = useAccount();
 

@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useConnect } from "wagmi";
-import { appChain } from "@/config/wagmi";
-import { dedupeWalletConnectors } from "@/lib/walletConnectors";
+import { useAccount, useConnect, useReconnect } from "wagmi";
+import { dedupeWalletConnectors, connectorDedupeKey } from "@/lib/walletConnectors";
+import { connectWalletSafely } from "@/lib/connectWallet";
+import { isBaseApp } from "@/lib/detectBaseApp";
 import {
   getWalletOptionDescription,
   getWalletOptionLabel,
@@ -18,11 +19,18 @@ interface WalletConnectModalProps {
 
 export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
   const [mounted, setMounted] = useState(false);
-  const { connectAsync, connectors, isPending, error } = useConnect();
-  const walletOptions = useMemo(
-    () => dedupeWalletConnectors(connectors),
-    [connectors]
-  );
+  const [localError, setLocalError] = useState<string | null>(null);
+  const { address, isConnected, connector: activeConnector, status } = useAccount();
+  const { connectAsync, connectors, isPending } = useConnect();
+  const { reconnectAsync } = useReconnect();
+
+  const walletOptions = useMemo(() => {
+    const options = dedupeWalletConnectors(connectors);
+    if (isBaseApp()) {
+      return options.filter((c) => connectorDedupeKey(c) === "base");
+    }
+    return options;
+  }, [connectors]);
 
   useEffect(() => {
     setMounted(true);
@@ -30,6 +38,7 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
 
   useEffect(() => {
     if (!open) return;
+    setLocalError(null);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -37,7 +46,35 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (open && isConnected && address) {
+      onClose();
+    }
+  }, [open, isConnected, address, onClose]);
+
   if (!mounted) return null;
+
+  const handleConnect = async (connector: (typeof walletOptions)[number]) => {
+    setLocalError(null);
+
+    if (isConnected && activeConnector?.uid === connector.uid) {
+      onClose();
+      return;
+    }
+
+    const result = await connectWalletSafely(
+      connector,
+      connectAsync,
+      reconnectAsync
+    );
+
+    if (result === "connected") {
+      onClose();
+      return;
+    }
+
+    setLocalError("Could not connect. Try again or reopen the app.");
+  };
 
   return createPortal(
     <AnimatePresence>
@@ -80,12 +117,18 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
                 Connect wallet
               </h2>
               <p className="mt-1 text-center text-[11px] text-slate-400">
-                Base · Farcaster · Browser
+                {isBaseApp()
+                  ? "Base Smart Wallet"
+                  : "Base · Farcaster · Browser"}
               </p>
             </div>
 
             <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-4 py-3">
-              {walletOptions.length === 0 ? (
+              {status === "reconnecting" || status === "connecting" ? (
+                <li className="py-6 text-center text-xs text-slate-300">
+                  Connecting wallet…
+                </li>
+              ) : walletOptions.length === 0 ? (
                 <li className="py-4 text-center text-xs text-slate-400">
                   No wallets available in this browser
                 </li>
@@ -95,17 +138,7 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
                     <button
                       type="button"
                       disabled={isPending}
-                      onClick={async () => {
-                        try {
-                          await connectAsync({
-                            connector,
-                            chainId: appChain.id,
-                          });
-                          onClose();
-                        } catch {
-                          /* error shown below */
-                        }
-                      }}
+                      onClick={() => void handleConnect(connector)}
                       className="btn-app h-auto min-h-12 flex-col items-start gap-0.5 rounded-2xl px-4 py-3 normal-case tracking-normal"
                     >
                       <span className="block truncate text-xs font-medium text-slate-100">
@@ -120,9 +153,9 @@ export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
               )}
             </ul>
 
-            {error && (
+            {localError && (
               <p className="shrink-0 px-4 pb-2 text-center text-xs text-red-400">
-                {error.message.slice(0, 120)}
+                {localError}
               </p>
             )}
 

@@ -13,6 +13,14 @@ export function WalletButton() {
   const { address, isConnected, status } = useAccount();
   const { disconnect } = useDisconnect();
 
+  if (status === "connecting" || status === "reconnecting") {
+    return (
+      <button type="button" disabled className="btn-app opacity-70">
+        <span className="truncate">Connecting…</span>
+      </button>
+    );
+  }
+
   if (isConnected && address && status === "connected") {
     return (
       <button
