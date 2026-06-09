@@ -34,6 +34,8 @@ const wagmiStorage = createStorage({
 
 export const config = createConfig({
   chains: [base],
+  /** Avoid EIP-6963 duplicates with baseAccount inside Base app */
+  multiInjectedProviderDiscovery: false,
   connectors: [
     baseAccount({
       appName: "Boombox Warplet",

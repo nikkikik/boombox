@@ -1,10 +1,12 @@
 import type { Connector } from "wagmi";
+import { connectorDedupeKey } from "@/lib/walletConnectors";
 
 export function getWalletOptionLabel(connector: Connector): string {
+  if (connectorDedupeKey(connector) === "base") {
+    return "Base Smart Wallet";
+  }
+
   switch (connector.id) {
-    case "baseAccount":
-    case "coinbaseWalletSDK":
-      return "Base Smart Wallet";
     case "injected":
       return "Browser Wallet (MetaMask…)";
     case "farcaster":
@@ -16,10 +18,11 @@ export function getWalletOptionLabel(connector: Connector): string {
 }
 
 export function getWalletOptionDescription(connector: Connector): string {
+  if (connectorDedupeKey(connector) === "base") {
+    return "Smart wallet on Base — gasless & batch txs";
+  }
+
   switch (connector.id) {
-    case "baseAccount":
-    case "coinbaseWalletSDK":
-      return "Smart wallet on Base — gasless & batch txs";
     case "injected":
       return "Extension wallet in your browser";
     case "farcaster":

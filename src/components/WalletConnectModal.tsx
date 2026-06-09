@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useConnect } from "wagmi";
 import { appChain } from "@/config/wagmi";
+import { dedupeWalletConnectors } from "@/lib/walletConnectors";
 import {
   getWalletOptionDescription,
   getWalletOptionLabel,
@@ -15,43 +16,11 @@ interface WalletConnectModalProps {
   onClose: () => void;
 }
 
-/** One entry per wallet type — Base app injects duplicate connectors */
-const PREFERRED_CONNECTOR_IDS = [
-  "baseAccount",
-  "coinbaseWalletSDK",
-  "farcaster",
-  "farcasterMiniApp",
-  "injected",
-] as const;
-
-function dedupeConnectors(
-  connectors: ReturnType<typeof useConnect>["connectors"]
-) {
-  const seen = new Set<string>();
-  const sorted = [...connectors].sort((a, b) => {
-    const ai = PREFERRED_CONNECTOR_IDS.indexOf(
-      a.id as (typeof PREFERRED_CONNECTOR_IDS)[number]
-    );
-    const bi = PREFERRED_CONNECTOR_IDS.indexOf(
-      b.id as (typeof PREFERRED_CONNECTOR_IDS)[number]
-    );
-    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-  });
-
-  return sorted.filter((connector) => {
-    let key = connector.id;
-    if (key === "coinbaseWalletSDK") key = "baseAccount";
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
 export function WalletConnectModal({ open, onClose }: WalletConnectModalProps) {
   const [mounted, setMounted] = useState(false);
   const { connectAsync, connectors, isPending, error } = useConnect();
   const walletOptions = useMemo(
-    () => dedupeConnectors(connectors),
+    () => dedupeWalletConnectors(connectors),
     [connectors]
   );
 
