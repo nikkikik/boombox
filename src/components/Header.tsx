@@ -52,14 +52,20 @@ export function Header({ daily }: HeaderProps) {
               type="button"
               disabled={!daily.canClaim || daily.isPending}
               onClick={() => void daily.claim()}
-              className="btn-app"
+              className={
+                daily.showSuccess
+                  ? "btn-app btn-app-daily btn-app-daily-done"
+                  : daily.canClaim || daily.isPending
+                    ? "btn-app btn-app-daily"
+                    : "btn-app"
+              }
               animate={daily.showSuccess ? { scale: [1, 1.04, 1] } : { scale: 1 }}
               transition={{ duration: 0.3 }}
             >
               <span className="truncate">{dailyShortLabel(daily)}</span>
             </motion.button>
           ) : (
-            <div className="btn-app btn-app-muted">
+            <div className="btn-app btn-app-daily-cooldown">
               <span className="truncate">{daily.waitLabel ?? dailyShortLabel(daily)}</span>
             </div>
           )}

@@ -177,6 +177,84 @@ body {
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
+  /** Header — Daily check-in */
+  .btn-app-daily {
+    @apply font-bold;
+    border: 2px solid rgba(56, 189, 248, 0.8);
+    background: linear-gradient(
+      180deg,
+      #38bdf8 0%,
+      #0ea5e9 52%,
+      #0284c7 100%
+    );
+    color: #f0f9ff;
+    box-shadow:
+      0 0 18px rgba(14, 165, 233, 0.5),
+      0 4px 14px rgba(0, 0, 0, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+
+  .btn-app-daily:hover:not(:disabled) {
+    border-color: rgba(186, 230, 253, 0.95);
+    background: linear-gradient(
+      180deg,
+      #7dd3fc 0%,
+      #38bdf8 52%,
+      #0ea5e9 100%
+    );
+    box-shadow:
+      0 0 26px rgba(56, 189, 248, 0.65),
+      0 6px 18px rgba(0, 0, 0, 0.38),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .btn-app-daily:not(:disabled) {
+    animation: daily-btn-pulse 2.2s ease-in-out infinite;
+  }
+
+  @keyframes daily-btn-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 14px rgba(14, 165, 233, 0.45),
+        0 4px 14px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    50% {
+      box-shadow:
+        0 0 24px rgba(56, 189, 248, 0.7),
+        0 6px 18px rgba(0, 0, 0, 0.36),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+  }
+
+  .btn-app-daily-done {
+    border-color: rgba(134, 239, 172, 0.85);
+    background: linear-gradient(
+      180deg,
+      #4ade80 0%,
+      #22c55e 52%,
+      #16a34a 100%
+    );
+    color: #f0fdf4;
+    box-shadow:
+      0 0 20px rgba(34, 197, 94, 0.55),
+      0 4px 14px rgba(0, 0, 0, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    animation: none;
+  }
+
+  .btn-app-daily-cooldown {
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    background: linear-gradient(
+      180deg,
+      rgba(14, 165, 233, 0.18) 0%,
+      rgba(2, 132, 199, 0.12) 100%
+    );
+    color: #7dd3fc;
+  }
+
   /** Whack-a-mole pit: clips sprite below rim */
   .game-hole {
     --hole-rim-y: 68%;
