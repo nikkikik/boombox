@@ -117,11 +117,11 @@ export function ActionButtons({
             type="button"
             disabled={isTxPending || txBlocked}
             onClick={onNextLevel}
-            className="btn-app min-h-12 flex-col gap-0.5 py-2 normal-case tracking-normal"
+            className="btn-app btn-app-choice-next flex-col gap-0.5 py-2"
             whileTap={!isTxPending ? { scale: 0.98 } : {}}
           >
             <span>{isTxPending ? (txLabel ?? "Next level…") : "Next level"}</span>
-            <span className="text-[9px] font-normal text-slate-400">
+            <span className="text-[9px] font-medium text-purple-100/85">
               Lv {level + 1} · {getLevelChance(level + 1)}%
             </span>
           </motion.button>
@@ -130,11 +130,11 @@ export function ActionButtons({
             type="button"
             disabled={isTxPending || txBlocked || cashOutPreview <= 0}
             onClick={onCashOut}
-            className="btn-app min-h-12 flex-col gap-0.5 py-2 normal-case tracking-normal"
+            className="btn-app btn-app-choice-cashout flex-col gap-0.5 py-2"
             whileTap={cashOutPreview > 0 && !isTxPending ? { scale: 0.98 } : {}}
           >
             <span>{isTxPending ? (txLabel ?? "Claiming…") : "Cash out"}</span>
-            <span className="text-[9px] font-normal text-slate-400">
+            <span className="text-[9px] font-medium text-green-50/90">
               {cashOutPreview.toFixed(0)} $BOOM
             </span>
           </motion.button>
